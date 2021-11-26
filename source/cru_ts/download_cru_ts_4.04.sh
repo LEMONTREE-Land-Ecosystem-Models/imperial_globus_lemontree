@@ -3,9 +3,8 @@
 
 module load anaconda3/personal
 
-# Activate a conda environment, which needs packages crypotography and ContrailOnlineCAClient:
-# conda install cryptography
-# conda install  ContrailOnlineCAClient>=0.5.1
+# Activate a conda environment, which needs simplejson and ContrailOnlineCAClient:
+# pip install ContrailOnlineCAClient
 
 source activate base
 
