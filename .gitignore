@@ -7,3 +7,13 @@ certs/*
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+
+# Data files
+*.gz
+*.zip
+*.dat
+*.tif
+*.[Rr]data
+*.[Rr]da
+*.asc
+*.nc
