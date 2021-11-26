@@ -1,0 +1,17 @@
+# Imperial GLOBUS Lemontree
+
+This repository is used to record code used to download the source data 
+and create derived datasets stored in the Imperial Lemontree data storage. 
+
+The datafiles themselves **must not** be added to this repository: GitHub
+is not an appropriate file storage solution for large binary files!
+
+There are two root directories:
+
+* `source`: this directory is used to hold copies of directly downloaded
+  core source datasets.
+  
+* `derived`: this directory is used to hold datasets derived from the 
+  inputs in `source` that we want to make available.
+  
+All of the files in this storage are made available via a GLOBUS endpoint.
