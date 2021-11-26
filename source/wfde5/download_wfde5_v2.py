@@ -49,16 +49,24 @@ if not os.path.exists(dir_root):
 c = cdsapi.Client()
 
 # Elevation - no temporal series
+outfile = os.path.join(dir_root, f"Elev/WFDE5_v2.0_Elev.zip")
+outdir = os.path.dirname(outfile)
 
-c.retrieve(
-    'derived-near-surface-meteorological-variables',
-    {
-        'version': '2.0',
-        'format': 'zip',
-        'variable': 'grid_point_altitude',
-        'reference_dataset': 'cru',
-    },
-    'WFDE5_v2.0_grid_point_altitude.zip')
+if not os.path.exists(outdir):
+     os.makedirs(outdir)
+
+# Skip already downloaded files
+if not os.path.exists(outfile):
+
+    c.retrieve(
+        'derived-near-surface-meteorological-variables',
+        {
+            'version': '2.0',
+            'format': 'zip',
+            'variable': 'grid_point_altitude',
+            'reference_dataset': 'cru',
+        },
+        outfile)
 
 
 # Other variables - time series
@@ -70,13 +78,14 @@ variables = (('Tair', 'near_surface_air_temperature'),
              ('PSurf','surface_air_pressure',) 
              ('LWdown','surface_downwelling_longwave_radiation'),
              ('SWdown','surface_downwelling_shortwave_radiation'))
+             )
 
 for short_name, long_name in variables:
     for yr in range(1979, 2020):
             
             outfile = os.path.join(dir_root, short_name, 
                                    f"WFDE5_v2.0_{short_name}_{yr}.zip")
-            outdir = os.dirname(outfile)
+            outdir = os.path.dirname(outfile)
             
             if not os.path.exists(outdir):
                 os.makedirs(outdir)
