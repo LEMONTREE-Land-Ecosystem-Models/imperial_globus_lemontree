@@ -1,9 +1,14 @@
 import sys
 import os
 import simplejson
+import warnings
+
+# urllib3 issues a lot of InsecureRequestWarnings
+if not sys.warnoptions:
+    warnings.simplefilter("ignore")
 
 # Import the download functions from the tools directory
-sys.path.append('/rds/general/projects/lemontree/tools')
+sys.path.append('/rds/general/project/lemontree/live/tools')
 import ceda_file_downloader
 
 """
@@ -29,7 +34,11 @@ with open(ceda_cred_json) as cj:
 # Set roots
 
 url_root = "https://dap.ceda.ac.uk/badc/cru/data/cru_ts/cru_ts_4.04/"
-dir_root  = '/rds/general/projects/lemontree/live/source/cru_ts/cru_ts_4.0.4'
+dir_root  = '/rds/general/project/lemontree/live/source/cru_ts/cru_ts_4.0.4'
+
+# Make the download directory
+if not os.path.exists(dir_root):
+    os.makedirs(dir_root)
 
 # Load doc files
 
@@ -52,6 +61,7 @@ decades = [f"{f + 1}.{t}" for f, t in zip(decades[:-1], decades[1:])]
 
 for var in variables:
     for dec in decades:
+        pass
         
         url_end = f"data/{var}/cru_ts4.04.{dec}.{var}.dat.nc.gz"
         
