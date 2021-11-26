@@ -1,0 +1,3 @@
+# Python package requirements for download and running
+simplejson
+ContrailOnlineCAClient
