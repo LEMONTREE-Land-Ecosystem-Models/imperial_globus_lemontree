@@ -72,13 +72,12 @@ if not os.path.exists(outfile):
 # Other variables - time series
 variables = (('Tair', 'near_surface_air_temperature'), 
              ('Qair', 'near_surface_specific_humidity'),
-             ('Wind', 'near_surface_wind_speed',) 
-             ('Rainf','rainfall_flux',) 
+             ('Wind', 'near_surface_wind_speed'), 
+             ('Rainf','rainfall_flux'), 
              ('Snowf','snowfall_flux'),
-             ('PSurf','surface_air_pressure',) 
+             ('PSurf','surface_air_pressure'), 
              ('LWdown','surface_downwelling_longwave_radiation'),
              ('SWdown','surface_downwelling_shortwave_radiation'))
-             )
 
 for short_name, long_name in variables:
     for yr in range(1979, 2020):

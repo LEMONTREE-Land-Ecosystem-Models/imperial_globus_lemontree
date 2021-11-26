@@ -15,6 +15,6 @@ module load anaconda3/personal
 
 source activate base
 
-python download_wfde5_v2.py
+python /rds/general/project/lemontree/live/source/wfde5/download_wfde5_v2.py
 
 conda deactivate
