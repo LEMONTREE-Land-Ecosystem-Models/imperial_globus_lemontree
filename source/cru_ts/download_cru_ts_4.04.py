@@ -61,7 +61,7 @@ decades = [f"{f + 1}.{t}" for f, t in zip(decades[:-1], decades[1:])]
 
 for var in variables:
 
-    print(f'Downloading {var}: '}
+    print(f'Downloading {var}: ')
     
     for dec in decades:
 
