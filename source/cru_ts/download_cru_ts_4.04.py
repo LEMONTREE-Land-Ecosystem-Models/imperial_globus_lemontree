@@ -60,9 +60,11 @@ decades = list(range(1900, 2020, 10)) + [2019]
 decades = [f"{f + 1}.{t}" for f, t in zip(decades[:-1], decades[1:])]
 
 for var in variables:
+
+    print(f'Downloading {var}: '}
+    
     for dec in decades:
-        pass
-        
+
         url_end = f"data/{var}/cru_ts4.04.{dec}.{var}.dat.nc.gz"
         
         outdir = os.path.join(dir_root, os.path.dirname(url_end))
@@ -78,6 +80,10 @@ for var in variables:
         url = url_root + url_end
         
         ceda_file_downloader.download(url, outfile, credentials)
+        
+        print('.')
+
+    print('\n')
         
         
 
