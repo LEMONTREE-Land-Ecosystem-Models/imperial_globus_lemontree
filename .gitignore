@@ -1,0 +1,6 @@
+# The certs folder is part of the structure but the contents 
+# should never be saved to the repo, so forbid all except a 
+# .keep file to maintain the folder
+certs/*
+!certs/.keep
+
