@@ -12,8 +12,8 @@
 
 module load cdo
 
-# Skip Elev, which is constant
-variables=(LWdown PSurf Qair Rainf Snowf SWdown Tair Wind)
+# Skip Elev, which is constant, and wind which is a bit meaningless
+variables=(LWdown PSurf Qair Rainf Snowf SWdown Tair)
 
 # Each job handles a different year
 year=$(expr 1978 + $PBS_ARRAY_INDEX)
@@ -26,7 +26,7 @@ mkdir -p $der_path
 # Loop over the variables.
 for var in "${variables[@]}"; 
 do 
-    echo $v;
+    echo $var;
     cd $der_path
     
     # Move to the variable directory and make if needed
@@ -44,6 +44,6 @@ do
     done
     
     # Merge the files and then remove the temporary ones.
-    cdo mergetime daymean_${year}* ${var}_WFDE5v2_CRU_daily_means_${year}.nc
+    cdo mergetime -f nc4c -z zip_6 daymean_${year}* ${var}_WFDE5v2_CRU_daily_means_${year}.nc
     rm daymean_${year}*
 done
