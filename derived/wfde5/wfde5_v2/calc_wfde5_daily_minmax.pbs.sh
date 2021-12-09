@@ -43,7 +43,7 @@ do
         done
     
         # Merge the files and then remove the temporary ones.
-        cdo mergetime -f nc4c -z zip_6 day${metric}_${year}* ${var}_WFDE5v2_CRU_daily_${metric}_${year}.nc
+        cdo -f nc4c -z zip_6 mergetime day${metric}_${year}* ${var}_WFDE5v2_CRU_daily_${metric}_${year}.nc
         rm day${metric}_${year}*
     done
 done
