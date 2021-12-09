@@ -28,7 +28,7 @@ do
     do
     
         # Move to the variable directory and make if needed
-        outdir = ${der_path}/daily_${metric}/
+        outdir=${der_path}/daily_${metric}/
         mkdir -p $outdir
         cd $outdir
     
