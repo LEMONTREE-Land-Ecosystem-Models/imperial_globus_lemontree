@@ -8,12 +8,9 @@
 #PBS -lwalltime=24:00:00
 #PBS -j oe
 #PBS -J 1-2:2
-#PBS -o /rds/general/project/lemontree/live/derived/wfde5/wfde5_v2/daily_means/download_wfde5_v2.out
+#PBS -o /rds/general/project/lemontree/live/derived/wfde5/wfde5_v2/daily_min_max.out
 
 module load cdo
-
-# Only using one variable at the moment - but could add others
-variables=(Tair)
 
 # Each job handles a different year
 year=$(expr 1978 + $PBS_ARRAY_INDEX)
@@ -22,12 +19,12 @@ year=$(expr 1978 + $PBS_ARRAY_INDEX)
 src_path=/rds/general/project/lemontree/live/source/wfde5/wfde5_v2
 der_path=/rds/general/project/lemontree/live/derived/wfde5/wfde5_v2/
 
-# Loop over the variables.
-for var in "${variables[@]}"; 
+# Loop over the variables - currently only Tair, but keeping loop in case others needed.
+for var in Tair;
 do 
     echo $var;
     
-    for metric in (min max);
+    for metric in min max;
     do
     
         # Move to the variable directory and make if needed
