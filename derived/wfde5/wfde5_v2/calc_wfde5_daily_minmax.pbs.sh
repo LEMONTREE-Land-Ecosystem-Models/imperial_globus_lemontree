@@ -7,7 +7,7 @@
 #PBS -lselect=1:ncpus=1:mem=96gb
 #PBS -lwalltime=24:00:00
 #PBS -j oe
-#PBS -J 1-2:2
+#PBS -J 1-41
 #PBS -o /rds/general/project/lemontree/live/derived/wfde5/wfde5_v2/daily_min_max.out
 
 module load cdo
