@@ -44,6 +44,6 @@ do
     done
     
     # Merge the files and then remove the temporary ones.
-    cdo mergetime -f nc4c -z zip_6 daymean_${year}* ${var}_WFDE5v2_CRU_daily_means_${year}.nc
+    cdo -f nc4c -z zip_6 mergetime daymean_${year}* ${var}_WFDE5v2_CRU_daily_means_${year}.nc
     rm daymean_${year}*
 done
