@@ -1,6 +1,7 @@
 import os
 import sys
 import glob
+import datetime
 
 import scipy.io as sio
 import numpy as np
@@ -31,7 +32,7 @@ else:
     sys.exit()
 
 # Location of the root directory
-dir_root = '/rds/general/project/lemontree/live/incoming/SNU_Ryu/'
+dir_root = '/rds/general/project/lemontree/live/incoming/SNU_Ryu/source_format'
 
 # Get the files 
 input_file_pattern = os.path.join(dir_root, dir_path, file_glob)
@@ -62,10 +63,11 @@ for day_idx, this_file in zip(day_ord, input_year_files):
     mat = sio.loadmat(this_file)
     mat_data = mat['data']
     mat_data_unpack = np.zeros_like(landmask, dtype='float32')
+    mat_data_unpack[:] = np.nan
     mat_data_unpack[land_idx] = mat_data.flatten()
     
     # MAPPING to cells and day of year
-    base_grid[:, :, this_day] = mat_data_unpack
+    base_grid[:, :, day_idx] = mat_data_unpack
 
 # Create the xarray object holding the data
 dates = sorted([datetime.datetime(year, 1, 1) + datetime.timedelta(d - 1) for d in days])

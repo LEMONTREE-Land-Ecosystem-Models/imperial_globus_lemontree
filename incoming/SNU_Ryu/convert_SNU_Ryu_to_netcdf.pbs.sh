@@ -7,7 +7,7 @@
 
 #PBS -lselect=1:ncpus=1:mem=96gb
 #PBS -lwalltime=24:00:00
-#PBS -J 1-2:2
+#PBS -J 1-20
 #PBS -j oe
 #PBS -o /rds/general/project/lemontree/live/incoming/SNU_Ryu/conversion.out
 
