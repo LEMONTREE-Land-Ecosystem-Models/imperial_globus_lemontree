@@ -32,7 +32,7 @@ else:
     sys.exit()
 
 # Location of the root directory
-dir_root = '/rds/general/project/lemontree/live/incoming/SNU_Ryu/source_format'
+dir_root = '/rds/general/project/lemontree/live/source/SNU_Ryu_FPAR_LAI/source_format'
 
 # Get the files 
 input_file_pattern = os.path.join(dir_root, dir_path, file_glob)
