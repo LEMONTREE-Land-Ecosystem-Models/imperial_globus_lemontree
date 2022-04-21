@@ -21,11 +21,11 @@ year = 1999 + int(arrind)
 # var should be one of FPAR or LAI
 if var == 'FPAR':
     dir_path = 'fPAR_daily_0.05deg'
-    file_glob = f'FPAR_Daily^.{year}*'
+    file_glob = f'FPAR_Daily^.{year}*.mat'
     unit = 'XXX'
 elif var == 'LAI':
     dir_path = 'LAI_daily_0.05deg'
-    file_glob = f'LAI_Daily^.{year}*'
+    file_glob = f'LAI_Daily^.{year}*.mat'
     unit='XXX'
 else:
     sys.stderr.write('Unknown or missing SCRIPT_VAR value')
