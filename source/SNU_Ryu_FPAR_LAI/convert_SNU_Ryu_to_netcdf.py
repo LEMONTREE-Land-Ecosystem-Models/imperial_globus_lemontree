@@ -51,10 +51,16 @@ latitude = np.arange(0.025, 180, 0.05)
 
 # Get the landmask for unpacking data - note that this is (lat, long)
 landmask = sio.loadmat(os.path.join(dir_root, 'Landmask.005d.mat'))['data']
-land_idx = np.where(landmask)
+
+# The issue here is that the packing of the values into the daily files
+# uses column major ordering, not row major, so need to do some shuffling
+# to get array indices that will insert the data into the grid correctly.
+land_cell_idx_col_major = np.nonzero(landmask.flatten(order='F'))
+land_cell_idx = np.unravel_index(land_cell_idx_col_major, landmask.shape, order='F')
 
 # Make a 3D array to complete for the year
-base_grid = np.ndarray((len(latitude), len(longitude),  len(days)), dtype='float32')
+base_grid = np.ndarray((len(latitude), len(longitude),  len(days)), 
+                       dtype='float32')
 
 # Loop over the files
 for day_idx, this_file in zip(day_ord, input_year_files):
@@ -62,11 +68,13 @@ for day_idx, this_file in zip(day_ord, input_year_files):
     # Extract and unpack
     mat = sio.loadmat(this_file)
     mat_data = mat['data']
-    mat_data_unpack = np.zeros_like(landmask, dtype='float32')
+
+    # insert the values into an empty matrix
+    mat_data_unpack = np.empty_like(landmask, dtype='float32')
     mat_data_unpack[:] = np.nan
-    mat_data_unpack[land_idx] = mat_data.flatten()
+    mat_data_unpack[land_cell_idx] = mat_data.flatten()
     
-    # MAPPING to cells and day of year
+    # insert into the correct day of year
     base_grid[:, :, day_idx] = mat_data_unpack
 
 # Create the xarray object holding the data
