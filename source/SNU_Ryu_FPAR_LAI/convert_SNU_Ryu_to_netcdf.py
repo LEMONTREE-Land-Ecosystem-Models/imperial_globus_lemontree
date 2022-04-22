@@ -20,11 +20,11 @@ year = 1999 + int(arrind)
 
 # var should be one of FPAR or LAI
 if var == 'FPAR':
-    dir_path = 'fPAR_daily_0.05deg'
-    file_glob = f'FPAR_Daily^.{year}*'
+    dir_path = 'source_format/fPAR_daily_0.05deg'
+    file_glob = f'FPAR_Daily^.{year}*.mat'
     unit = 'XXX'
 elif var == 'LAI':
-    dir_path = 'LAI_daily_0.05deg'
+    dir_path = 'source_format/LAI_daily_0.05deg'
     file_glob = f'LAI_Daily^.{year}*'
     unit='XXX'
 else:
@@ -32,7 +32,7 @@ else:
     sys.exit()
 
 # Location of the root directory
-dir_root = '/rds/general/project/lemontree/live/source/SNU_Ryu_FPAR_LAI/source_format'
+dir_root = '/rds/general/project/lemontree/live/source/SNU_Ryu_FPAR_LAI/'
 
 # Get the files 
 input_file_pattern = os.path.join(dir_root, dir_path, file_glob)
@@ -45,9 +45,11 @@ days = [int(f.split('.')[-2]) for f in input_year_files]
 # matrix (might not start Jan 1st)
 day_ord = np.argsort(np.argsort(days))
 
-# Build numpy array for a year of 0.05 degree data
-longitude = np.arange(0.025, 360, 0.05)
-latitude = np.arange(0.025, 180, 0.05)
+# Create lat and long dimensions using cell centres: note _deliberate_
+# overrun at end of sequence to avoid clipping last value
+res = 0.05
+longitude = np.arange(-180 + res / 2, 180, res)
+latitude = np.arange(90 - res/2, -90, -res)
 
 # Get the landmask for unpacking data - note that this is (lat, long)
 landmask = sio.loadmat(os.path.join(dir_root, 'Landmask.005d.mat'))['data']
@@ -85,6 +87,8 @@ xds = xarray.DataArray(base_grid,
 
 xds.name = var
 
-# Save to disk
-outfile = os.path.join(dir_root, f'{var}_{year}.nc')
-xds.to_netcdf(outfile, encoding={var: {'zlib': True, 'complevel': 6}})
+# Save to disk - creating output directory
+out_dir = os.path.join(dir_root, f'{var}_netcdf')
+os.makedirs(out_dir, exist_ok=True)
+out_file = os.path.join(out_dir, f'{var}_{year}.nc')
+xds.to_netcdf(out_file, encoding={var: {'zlib': True, 'complevel': 6}})
