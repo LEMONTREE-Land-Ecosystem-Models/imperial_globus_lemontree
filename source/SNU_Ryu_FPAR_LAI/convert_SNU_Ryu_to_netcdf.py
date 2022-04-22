@@ -25,7 +25,7 @@ if var == 'FPAR':
     unit = 'XXX'
 elif var == 'LAI':
     dir_path = 'source_format/LAI_daily_0.05deg'
-    file_glob = f'LAI_Daily^.{year}*'
+    file_glob = f'LAI_Daily^.{year}*.mat'
     unit='XXX'
 else:
     sys.stderr.write('Unknown or missing SCRIPT_VAR value')
