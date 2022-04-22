@@ -52,7 +52,7 @@ longitude = np.arange(-180 + res / 2, 180, res)
 latitude = np.arange(90 - res/2, -90, -res)
 
 # Get the landmask for unpacking data - note that this is (lat, long)
-landmask = sio.loadmat(os.path.join(dir_root, 'Landmask.005d.mat'))['data']
+landmask = sio.loadmat(os.path.join(dir_root, 'source_format/Landmask.005d.mat'))['data']
 
 # The issue here is that the packing of the values into the daily files
 # uses column major ordering, not row major, so need to do some shuffling
