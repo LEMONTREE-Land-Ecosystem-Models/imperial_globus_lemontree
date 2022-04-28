@@ -60,8 +60,8 @@ landmask = sio.loadmat(os.path.join(dir_root, 'source_format/Landmask.005d.mat')
 land_cell_idx_col_major = np.nonzero(landmask.flatten(order='F'))
 land_cell_idx = np.unravel_index(land_cell_idx_col_major, landmask.shape, order='F')
 
-# Make a 3D array to complete for the year
-base_grid = np.ndarray((len(latitude), len(longitude),  len(days)), 
+# Make a 3D array to complete for the year following CF TZYX recommendation
+base_grid = np.ndarray((len(days), len(latitude), len(longitude)), 
                        dtype='float32')
 
 # Loop over the files
@@ -77,18 +77,18 @@ for day_idx, this_file in zip(day_ord, input_year_files):
     mat_data_unpack[land_cell_idx] = mat_data.flatten()
     
     # insert into the correct day of year
-    base_grid[:, :, day_idx] = mat_data_unpack
+    base_grid[day_idx, :, :] = mat_data_unpack
 
 # Create the xarray object holding the data
 dates = sorted([datetime.datetime(year, 1, 1) + datetime.timedelta(d - 1) for d in days])
 xds = xarray.DataArray(base_grid, 
-                       coords=[latitude, longitude, dates], 
-                       dims=['latitude', 'longitude', 'time'])
+                       coords=[dates, latitude, longitude], 
+                       dims=['time', 'latitude', 'longitude'])
 
 xds.name = var
 
 # Save to disk - creating output directory
-out_dir = os.path.join(dir_root, f'{var}_netcdf')
+out_dir = os.path.join(dir_root, f'{var}_netcdf_cf')
 os.makedirs(out_dir, exist_ok=True)
 out_file = os.path.join(out_dir, f'{var}_{year}.nc')
 xds.to_netcdf(out_file, encoding={var: {'zlib': True, 'complevel': 6}})
