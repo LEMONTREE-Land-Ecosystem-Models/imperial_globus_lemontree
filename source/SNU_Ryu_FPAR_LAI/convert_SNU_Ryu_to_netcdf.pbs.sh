@@ -9,13 +9,15 @@
 #PBS -lwalltime=24:00:00
 #PBS -J 1-20
 #PBS -j oe
-#PBS -o /rds/general/project/lemontree/live/source/SNU_Ryu_FPAR_LAI/conversion.out
+#PBS -o /rds/general/project/lemontree/live/source/SNU_Ryu_FPAR_LAI/conversion_^job_id^_^array_index^.out
 
 # Submit using qsub -v SCRIPT_VAR=FPAR or qsub -v SCRIPT_VAR=LAI
 
 module load anaconda3/personal
 
 source activate base
+
+echo "In PBS.SH and running $SCRIPT_VAR : $PBS_ARRAY_INDEX"
 
 python /rds/general/project/lemontree/live/source/SNU_Ryu_FPAR_LAI/convert_SNU_Ryu_to_netcdf.py
 

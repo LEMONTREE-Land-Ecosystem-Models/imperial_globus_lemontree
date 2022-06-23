@@ -18,6 +18,8 @@ var = os.getenv('SCRIPT_VAR')
 arrind = os.getenv('PBS_ARRAY_INDEX')
 year = 1999 + int(arrind)
 
+sys.stdout.write(f"In Py and running: {var} {arrind} {year}")
+
 # var should be one of FPAR or LAI
 if var == 'FPAR':
     dir_path = 'source_format/fPAR_daily_0.05deg'

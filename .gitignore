@@ -17,3 +17,6 @@ __pycache__/
 *.[Rr]da
 *.asc
 *.nc
+
+# Other files
+.DS_Store
