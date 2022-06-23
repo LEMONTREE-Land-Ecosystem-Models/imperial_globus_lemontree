@@ -12,36 +12,37 @@ import xarray
 #        fine but need unpacking separately (not built in)
 
 # Needs to be submitted with an array job to loop over years with env variables:
-# * variable name in SCRIPT_VAR
-# * output dir suffix in SCRIPT_OUTDIR_SUFFIX
-# * optional packing flag in SCRIPT_PACK, packs the float into uint16
+# * variable name in VAR
+# * output dir suffix in OUTDIR_SUFFIX
+# * optional packing flag in PACK, packs the float into uint16
 
-var = os.getenv("SCRIPT_VAR")
-out_dir_suffix = os.getenv("SCRIPT_OUTDIR_SUFFIX")
-pack = bool(os.getenv("SCRIPT_PACK")) | False
+var = os.getenv("VAR")
+outdir_suffix = os.getenv("OUTDIR_SUFFIX")
+pack = bool(os.getenv("PACK")) | False
 
 arrind = os.getenv("PBS_ARRAY_INDEX")
 year = 1999 + int(arrind)
 
 sys.stdout.write(
-    f"In Py and running:\n  VAR: {var}\n" f"  YEAR: {year}\n  PACKING: {pack}"
+    f"In Py and running:\n  VAR: {var}\n  OUTDIR_SUFFIX: {outdir_suffix}\n" 
+    f"  YEAR: {year}\n  PACKING: {pack}"
 )
 
 # var should be one of FPAR or LAI
 if var == "FPAR":
     canonical_name = "fraction_of_surface_downwelling_photosynthetic_radiative_flux_absorbed_by_vegetation"
     dir_path = "source_format/fPAR_daily_0.05deg"
-    file_glob = f"FPAR_Daily^.{year}*.mat"
+    file_glob = f"FPAR_Daily*{year}*.mat"
     scale_factor = 1 / 64000  # Mapping 0 - 1 into 0 - 64000
     unit = "1"
 elif var == "LAI":
     canonical_name = "leaf_area_index"
     dir_path = "source_format/LAI_daily_0.05deg"
-    file_glob = f"LAI_Daily^.{year}*.mat"
+    file_glob = f"LAI_Daily*{year}*.mat"
     scale_factor = 1 / 6400  # Mapping 0 - 10 into 0 - 64000
     unit = "1"
 else:
-    sys.stderr.write("Unknown or missing SCRIPT_VAR value")
+    sys.stderr.write("Unknown or missing VAR value")
     sys.exit()
 
 # Location of the root directory
@@ -106,7 +107,7 @@ xds = xarray.DataArray(
 )
 
 # Save to disk - creating output directory
-out_dir = os.path.join(dir_root, f"{var}_{out_dir_suffix}")
+out_dir = os.path.join(dir_root, f"{var}_{outdir_suffix}")
 os.makedirs(out_dir, exist_ok=True)
 out_file = os.path.join(out_dir, f"{var}_{year}.nc")
 
