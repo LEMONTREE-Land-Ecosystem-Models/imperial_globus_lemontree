@@ -6,6 +6,7 @@ import datetime
 import scipy.io as sio
 import numpy as np
 import xarray
+import psutil
 
 # TODO - look at gathering to save space - cf-python implements reading and
 #        unpacking back to 2D really elegantly but xarray and netcdf4 read the
@@ -25,8 +26,19 @@ year = 1999 + int(arrind)
 
 sys.stdout.write(
     f"In Py and running:\n  VAR: {var}\n  OUTDIR_SUFFIX: {outdir_suffix}\n" 
-    f"  YEAR: {year}\n  PACKING: {pack}"
+    f"  YEAR: {year}\n  PACKING: {pack}\n"
 )
+sys.stdout.flush()
+
+# Get memory profiler
+process = psutil.Process(os.getpid())
+
+def report_mem(process, prefix=''):
+
+    mem = process.memory_info()[0] / float(2 ** 30)
+    sys.stdout.write(f"{prefix}Memory usage: {mem}\n")
+    sys.stdout.flush()
+
 
 # var should be one of FPAR or LAI
 if var == "FPAR":
@@ -82,6 +94,8 @@ base_grid = np.ndarray((len(days), len(latitude), len(longitude)), dtype="float3
 # Loop over the files
 for day_idx, this_file in zip(day_ord, input_year_files):
 
+    report_mem(process, f"Loading day: {day_idx}; ")
+
     # Extract and unpack
     mat = sio.loadmat(this_file)
     mat_data = mat["data"]
@@ -94,6 +108,10 @@ for day_idx, this_file in zip(day_ord, input_year_files):
     # insert into the correct day of year
     base_grid[day_idx, :, :] = mat_data_unpack
 
+
+# Reporting
+report_mem(process, "Data loaded; ")
+
 # Create the xarray object holding the data
 dates = sorted(
     [datetime.datetime(year, 1, 1) + datetime.timedelta(d - 1) for d in days]
@@ -105,6 +123,8 @@ xds = xarray.DataArray(
     name=canonical_name,
     attrs={"units": unit},
 )
+
+report_mem(process, "Array created; ")
 
 # Save to disk - creating output directory
 out_dir = os.path.join(dir_root, f"{var}_{outdir_suffix}")

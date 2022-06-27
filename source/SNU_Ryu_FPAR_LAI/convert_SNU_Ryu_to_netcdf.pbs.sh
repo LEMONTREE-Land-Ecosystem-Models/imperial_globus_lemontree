@@ -23,7 +23,9 @@
 
 module load anaconda3/personal
 
-source activate base
+source activate python3.10
+
+python --version
 
 echo -e "In PBS.SH and running:\n VAR: $VAR\n  OUTDIR_SUFFIX: $OUTDIR_SUFFIX\n  ARR_IND:  $PBS_ARRAY_INDEX\n  PACK: ${PACK:-Not set}"
 
