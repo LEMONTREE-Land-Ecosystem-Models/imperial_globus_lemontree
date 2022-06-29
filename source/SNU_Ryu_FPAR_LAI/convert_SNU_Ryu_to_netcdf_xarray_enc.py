@@ -45,13 +45,13 @@ if var == "FPAR":
     canonical_name = "fraction_of_surface_downwelling_photosynthetic_radiative_flux_absorbed_by_vegetation"
     dir_path = "source_format/fPAR_daily_0.05deg"
     file_glob = f"FPAR_Daily*{year}*.mat"
-    scale_factor = 64000  # Mapping 0 - 1 into 0 - 64000
+    scale_factor = 1 / 64000  # Mapping 0 - 1 into 0 - 64000
     unit = "1"
 elif var == "LAI":
     canonical_name = "leaf_area_index"
     dir_path = "source_format/LAI_daily_0.05deg"
     file_glob = f"LAI_Daily*{year}*.mat"
-    scale_factor = 6400  # Mapping 0 - 10 into 0 - 64000
+    scale_factor = 1 / 6400  # Mapping 0 - 10 into 0 - 64000
     unit = "1"
 else:
     sys.stderr.write("Unknown or missing VAR value")
@@ -112,24 +112,12 @@ for day_idx, this_file in zip(day_ord, input_year_files):
 # Reporting
 report_mem(process, "Data loaded; ")
 
-# Conversion 
-if pack:
-    out_data =  np.round(base_grid * scale_factor, 0)
-    out_data[np.isnan(out_data)] = 65535
-    out_data = out_data.astype('uint16')
-else:
-    out_data = base_grid
-
-# Reporting
-report_mem(process, "Conversion complete; ")
-
 # Create the xarray object holding the data
 dates = sorted(
     [datetime.datetime(year, 1, 1) + datetime.timedelta(d - 1) for d in days]
 )
-
 xds = xarray.DataArray(
-    out_data,
+    base_grid,
     coords=[dates, latitude, longitude],
     dims=["time", "latitude", "longitude"],
     name=canonical_name,
@@ -151,7 +139,8 @@ if pack:
         canonical_name: {
             "zlib": True,
             "complevel": 6,
-            "scale_factor": 1 / scale_factor,
+            "dtype": "uint16",
+            "scale_factor": scale_factor,
             "_FillValue": 65535,
         }
     }

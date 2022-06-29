@@ -45,13 +45,13 @@ if var == "FPAR":
     canonical_name = "fraction_of_surface_downwelling_photosynthetic_radiative_flux_absorbed_by_vegetation"
     dir_path = "source_format/fPAR_daily_0.05deg"
     file_glob = f"FPAR_Daily*{year}*.mat"
-    scale_factor = 1 / 64000  # Mapping 0 - 1 into 0 - 64000
+    scale_factor = 64000  # Mapping 0 - 1 into 0 - 64000
     unit = "1"
 elif var == "LAI":
     canonical_name = "leaf_area_index"
     dir_path = "source_format/LAI_daily_0.05deg"
     file_glob = f"LAI_Daily*{year}*.mat"
-    scale_factor = 1 / 6400  # Mapping 0 - 10 into 0 - 64000
+    scale_factor = 6400  # Mapping 0 - 10 into 0 - 64000
     unit = "1"
 else:
     sys.stderr.write("Unknown or missing VAR value")
@@ -116,36 +116,46 @@ report_mem(process, "Data loaded; ")
 dates = sorted(
     [datetime.datetime(year, 1, 1) + datetime.timedelta(d - 1) for d in days]
 )
-xds = xarray.DataArray(
-    base_grid,
-    coords=[dates, latitude, longitude],
-    dims=["time", "latitude", "longitude"],
-    name=canonical_name,
-    attrs={"units": unit},
-)
 
-report_mem(process, "Array created; ")
+# Optional manual conversion to uint16
+#  - xarray does provide the 'encoding' argument to to_netcdf(), but the memory
+#    management of this (make copy, set NA, cast copy) uses 2.5 x data in RAM, with
+#    some odd spikes. This conversion does that manually and sets attributes directly
+if pack:
+    out_data =  np.round(base_grid * scale_factor, 0)
+    out_data[np.isnan(out_data)] = 65535
+    out_data = out_data.astype('uint16')
+
+    # Reporting
+    report_mem(process, "Conversion complete; ")
+
+    xds = xarray.DataArray(
+        out_data,
+        coords=[dates, latitude, longitude],
+        dims=["time", "latitude", "longitude"],
+        name=var,
+        standard_name=canonical_name,
+        attrs={
+            "units": unit,
+            "scale_factor": 1 / scale_factor,
+            "_FillValue": 65535,
+        }
+    )
+else:
+    xds = xarray.DataArray(
+        base_grid,
+        coords=[dates, latitude, longitude],
+        dims=["time", "latitude", "longitude"],
+        name=var,
+        standard_name=canonical_name,
+        attrs={"units": unit},
+    )
+
+report_mem(process, "DataArray created; ")
 
 # Save to disk - creating output directory
 out_dir = os.path.join(dir_root, f"{var}_{outdir_suffix}")
 os.makedirs(out_dir, exist_ok=True)
 out_file = os.path.join(out_dir, f"{var}_{year}.nc")
 
-# Set up the output encoding - compress either output but
-# with pack set to True, configures the packing into uint16
-
-if pack:
-    encoding = {
-        canonical_name: {
-            "zlib": True,
-            "complevel": 6,
-            "dtype": "uint16",
-            "scale_factor": scale_factor,
-            "_FillValue": 65535,
-        }
-    }
-else:
-    encoding = {canonical_name: {"zlib": True, "complevel": 6}}
-
-
-xds.to_netcdf(out_file, encoding=encoding)
+xds.to_netcdf(out_file, encoding={canonical_name: {"zlib": True, "complevel": 6}})
