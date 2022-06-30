@@ -120,14 +120,27 @@ dates = sorted(
     [datetime.datetime(year, 1, 1) + datetime.timedelta(d - 1) for d in days]
 )
 
+
+print("dates created", end="\n", flush=True)
+
+
 # Optional manual conversion to uint16
 #  - xarray does provide the 'encoding' argument to to_netcdf(), but the memory
 #    management of this (make copy, set NA, cast copy) uses 2.5 x data in RAM, with
 #    some odd spikes. This conversion does that manually and sets attributes directly
 if pack:
+
+    print(f"Scaling: {base_grid.shape}", end="\n", flush=True)
+
+
     out_data =  np.round(base_grid * scale_factor, 0)
+    print(f"Scaled: {np.nanmin(out_data)} - {np.nanmax(out_data)}", end="\n", flush=True)
+    
     out_data[np.isnan(out_data)] = 65535
+    print("Filled", end="\n", flush=True)
+    
     out_data = out_data.astype('uint16')
+    print("Cast", end="\n", flush=True)
 
     # Reporting
     report_mem(process, "Conversion complete; ")
