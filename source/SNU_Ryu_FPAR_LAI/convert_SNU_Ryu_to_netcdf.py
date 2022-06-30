@@ -112,6 +112,9 @@ for day_idx, this_file in zip(day_ord, input_year_files):
 # Reporting
 report_mem(process, "Data loaded; ")
 
+sys.stdout.write(f"Range: {np.nanmin(base_grid)} {np.nanmax(base_grid)}\n")
+sys.stdout.flush()
+
 # Create the xarray object holding the data
 dates = sorted(
     [datetime.datetime(year, 1, 1) + datetime.timedelta(d - 1) for d in days]
@@ -134,11 +137,11 @@ if pack:
         coords=[dates, latitude, longitude],
         dims=["time", "latitude", "longitude"],
         name=var,
-        standard_name=canonical_name,
         attrs={
             "units": unit,
             "scale_factor": 1 / scale_factor,
             "_FillValue": 65535,
+            "standard_name": canonical_name,
         }
     )
 else:
@@ -147,8 +150,10 @@ else:
         coords=[dates, latitude, longitude],
         dims=["time", "latitude", "longitude"],
         name=var,
-        standard_name=canonical_name,
-        attrs={"units": unit},
+        attrs={
+            "units": unit,
+            "standard_name": canonical_name,
+        },
     )
 
 report_mem(process, "DataArray created; ")
@@ -158,4 +163,4 @@ out_dir = os.path.join(dir_root, f"{var}_{outdir_suffix}")
 os.makedirs(out_dir, exist_ok=True)
 out_file = os.path.join(out_dir, f"{var}_{year}.nc")
 
-xds.to_netcdf(out_file, encoding={canonical_name: {"zlib": True, "complevel": 6}})
+xds.to_netcdf(out_file, encoding={var: {"zlib": True, "complevel": 6}})
