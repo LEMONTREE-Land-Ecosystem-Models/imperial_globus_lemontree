@@ -4,9 +4,7 @@ import datetime
 import re
 from pathlib import Path
 
-import numpy as np
 import xarray
-import psutil
 
 """
 This script is used to check the limits on SNU Ryu incoming files.
@@ -100,10 +98,10 @@ with open(outfile, 'w') as outf:
 
     # Loop over the files
     for day_idx, this_file in year_files:
-        
+
         # Load and set missing values
         mat = xarray.load_dataarray(this_file)
         mat = mat.where(mat != var_info['fill'])
 
         # Report limits
-        outf.write(f"{year},{day_idx},{float(mat.min())},{float(mat.max())}")
+        outf.write(f"{year},{day_idx},{float(mat.min())},{float(mat.max())}\n")
