@@ -7,16 +7,15 @@
 
 #PBS -lselect=1:ncpus=1:mem=96gb
 #PBS -lwalltime=24:00:00
-#PBS -J 1-21
 #PBS -j oe
 #PBS -o limit_checker_^array_index^.out
 
 # Env vars needed:
 #
 # * Use VAR to set the variable 
-# * Use YEARONE to set the starting year
+
 # Example:
-# qsub -v VAR=FPAR,YEARONE=1982 check_limits_SNU_Ryu.pbs.sh 
+# qsub -v VAR=FPAR check_limits_SNU_Ryu.pbs.sh 
 
 module load anaconda3/personal
 
@@ -24,7 +23,7 @@ source activate python3.10
 
 python --version
 
-echo -e "In PBS.SH and running:\n VAR: $VAR\n ARR_IND:  $PBS_ARRAY_INDEX\n"
+echo -e "In PBS.SH and running:\n VAR: $VAR\n"
 
 python /rds/general/project/lemontree/live/source/SNU_Ryu_FPAR_LAI/check_limits_SNU_Ryu.py
 

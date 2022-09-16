@@ -1,30 +1,21 @@
 import os
 import sys
-import datetime
 import re
 from pathlib import Path
 
 import xarray
 
 """
-This script is used to check the limits on SNU Ryu incoming files.
-
-The script is intended to be submitted with an array job to loop over years with the
-following environment variables set:
-
+This script is used to check the limits on SNU Ryu incoming files. The
+following environment variables need to be set:
 * variable name in VAR
-* the earliest year to process in YEARONE
 """
 
 # Environment variables
 var = os.getenv("VAR")
-yearone = int(os.getenv("YEARONE"))
-
-arrind = os.getenv("PBS_ARRAY_INDEX")
-year = yearone + int(arrind) - 1
 
 sys.stdout.write(
-    f"In Py and running:\n  VAR: {var}\n  YEAR: {year}\n"
+    f"In Py and running:\n  VAR: {var}\n"
 )
 sys.stdout.flush()
 
@@ -86,17 +77,15 @@ input_file_dir = os.path.join(dir_root, f'{var}_daily_005d_V1')
 input_year_files = Path(input_file_dir).rglob(f'{var}_Daily_005d.*.nc')
 
 # Jeepers, this is quick. 15K files almost instantly.
-year_filter = [(yr_regex.search(p.name).groups(), p) for p in input_year_files]
-year_filter.sort()
-year_files = [(int(dy), fl) for ((yr, dy), fl) in year_filter if int(yr) == year]
+year_files = [(yr_regex.search(p.name).groups(), p) for p in input_year_files]
 
 # Create an output file
-outfile = os.path.join(dir_root, 'limits', var, f"{var}_{year}.csv")
+outfile = os.path.join(dir_root, 'limits', f"{var}_limits.csv")
 
 with open(outfile, 'w') as outf:
 
     # Loop over the files
-    for day_idx, this_file in year_files:
+    for (year, day_idx), this_file in year_files:
 
         # Load and set missing values
         try:
