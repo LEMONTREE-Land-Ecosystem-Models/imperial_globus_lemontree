@@ -91,7 +91,8 @@ with open(outfile, 'w') as outf:
 
         # Load and set missing values
         try:
-            mat = xarray.load_dataarray(this_file)
+            ds = xarray.load_dataset(this_file)
+            mat = ds[var]
         except (OSError, RuntimeError) as e:
             outf.write(f"{year},{day_idx},NA,NA # {str(e)}\n")
             continue
