@@ -13,13 +13,10 @@
 
 # Env vars needed:
 #
-# * Use VAR=FPAR or VAR=LAI to set the variable 
-# * Use OUTDIR_SUFFIX to set the suffix on the output dir,
-#        e.g. OUTDIR_SUFFIX=in_here -> FPAR_in_here
-# * Optionally use PACK=1 to pack outputs into uint16
-#
+# * Use VAR to set the variable 
+# * Use YEARONE to set the starting year
 # Example:
-# qsub -v VAR=FPAR,OUTDIR_SUFFIX=test,PACK=1 convert_SNU_Ryu_to_netcdf.pbs.sh 
+# qsub -v VAR=FPAR,YEARONE=1982 check_limits_SNU_Ryu.pbs.sh 
 
 module load anaconda3/personal
 
