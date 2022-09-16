@@ -91,8 +91,7 @@ year_filter.sort()
 year_files = [(int(dy), fl) for ((yr, dy), fl) in year_filter if int(yr) == year]
 
 # Create an output file
-
-outfile = os.path.join(dir_root, 'limits', f"{var}_{year}.csv")
+outfile = os.path.join(dir_root, 'limits', var, f"{var}_{year}.csv")
 
 with open(outfile, 'w') as outf:
 

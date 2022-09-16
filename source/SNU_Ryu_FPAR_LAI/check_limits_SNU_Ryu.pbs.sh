@@ -9,7 +9,7 @@
 #PBS -lwalltime=24:00:00
 #PBS -J 1-21
 #PBS -j oe
-#PBS -o /rds/general/project/lemontree/live/source/SNU_Ryu_FPAR_LAI/conversion_^array_index^.out
+#PBS -o limit_checker_^array_index^.out
 
 # Env vars needed:
 #
@@ -24,7 +24,7 @@ source activate python3.10
 
 python --version
 
-echo -e "In PBS.SH and running:\n VAR: $VAR\n  OUTDIR_SUFFIX: $OUTDIR_SUFFIX\n  ARR_IND:  $PBS_ARRAY_INDEX\n  PACK: ${PACK:-Not set}"
+echo -e "In PBS.SH and running:\n VAR: $VAR\n ARR_IND:  $PBS_ARRAY_INDEX\n"
 
 python /rds/general/project/lemontree/live/source/SNU_Ryu_FPAR_LAI/check_limits_SNU_Ryu.py
 
