@@ -100,7 +100,12 @@ with open(outfile, 'w') as outf:
     for day_idx, this_file in year_files:
 
         # Load and set missing values
-        mat = xarray.load_dataarray(this_file)
+        try:
+            mat = xarray.load_dataarray(this_file)
+        except OSError:
+            outf.write(f"{year},{day_idx},NA,NA # File IO error\n")
+            continue
+
         mat = mat.where(mat != var_info['fill'])
 
         # Report limits
