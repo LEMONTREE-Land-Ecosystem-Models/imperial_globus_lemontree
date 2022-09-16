@@ -78,6 +78,8 @@ input_year_files = Path(input_file_dir).rglob(f'{var}_Daily_005d.*.nc')
 
 # Jeepers, this is quick. 15K files almost instantly.
 year_files = [(yr_regex.search(p.name).groups(), p) for p in input_year_files]
+year_files.sort()
+
 
 # Create an output file
 outfile = os.path.join(dir_root, 'limits', var, f"{var}_limits.csv")
@@ -90,8 +92,8 @@ with open(outfile, 'w') as outf:
         # Load and set missing values
         try:
             mat = xarray.load_dataarray(this_file)
-        except OSError:
-            outf.write(f"{year},{day_idx},NA,NA # File IO error\n")
+        except (OSError, RuntimeError) as e:
+            outf.write(f"{year},{day_idx},NA,NA # {str(e)}\n")
             continue
 
         mat = mat.where(mat != var_info['fill'])
