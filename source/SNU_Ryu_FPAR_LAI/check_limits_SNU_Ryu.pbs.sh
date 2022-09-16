@@ -8,7 +8,7 @@
 #PBS -lselect=1:ncpus=1:mem=96gb
 #PBS -lwalltime=24:00:00
 #PBS -j oe
-#PBS -o limit_checker_^array_index^.out
+#PBS -o limit_checker.out
 
 # Env vars needed:
 #

@@ -80,7 +80,7 @@ input_year_files = Path(input_file_dir).rglob(f'{var}_Daily_005d.*.nc')
 year_files = [(yr_regex.search(p.name).groups(), p) for p in input_year_files]
 
 # Create an output file
-outfile = os.path.join(dir_root, 'limits', f"{var}_limits.csv")
+outfile = os.path.join(dir_root, 'limits', var, f"{var}_limits.csv")
 
 with open(outfile, 'w') as outf:
 
