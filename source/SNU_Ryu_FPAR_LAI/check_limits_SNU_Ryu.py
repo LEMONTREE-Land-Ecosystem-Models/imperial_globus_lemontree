@@ -80,11 +80,10 @@ input_year_files = Path(input_file_dir).rglob(f'{var}_Daily_005d.*.nc')
 year_files = [(yr_regex.search(p.name).groups(), p) for p in input_year_files]
 year_files.sort()
 
-
 # Create an output file
 outfile = os.path.join(dir_root, 'limits', var, f"{var}_limits.csv")
 
-with open(outfile, 'w') as outf:
+with open(outfile, 'w', buffering=1024) as outf:
 
     # Loop over the files
     for (year, day_idx), this_file in year_files:
@@ -93,7 +92,7 @@ with open(outfile, 'w') as outf:
         try:
             ds = xarray.load_dataset(this_file)
             mat = ds[var]
-        except (OSError, RuntimeError) as e:
+        except (OSError, RuntimeError, ValueError) as e:
             outf.write(f"{year},{day_idx},NA,NA # {str(e)}\n")
             continue
 

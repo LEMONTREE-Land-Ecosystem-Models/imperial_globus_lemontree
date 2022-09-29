@@ -35,7 +35,7 @@ year = yearone + int(arrind) - 1
 sys.stdout.write(
     f"In Py and running:\n  VAR: {var}\n  "
     f"OUTDIR_SUFFIX: {outdir_suffix}\n"
-    f"  YEAR: {year}\n  PACKING: {pack}\n"
+    f"  YEAR: {year}\n"
 )
 sys.stdout.flush()
 
@@ -185,7 +185,7 @@ for day_idx, this_file in year_files:
     mat_np = mat_np.where(mat.notnull(), NULL_VALUE)
 
     # insert into the correct day of year
-    base_grid[day_idx, :, :] = mat_np.T
+    base_grid[day_idx - 1, :, :] = mat_np.T
 
 
 # Reporting
@@ -208,7 +208,7 @@ print("dates created", end="\n", flush=True)
 
 # Extend the existing variable attributes
 var_attrs = {
-    **mat[var_info["data_var"]].attrs,
+    **mat.attrs,
     "scale_factor": 1 / var_info["scale_factor"],
     "add_offset": var_info["add_offset"],
     "_FillValue": NULL_VALUE,

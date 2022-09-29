@@ -9,7 +9,7 @@
 #PBS -lwalltime=24:00:00
 #PBS -J 1-21
 #PBS -j oe
-#PBS -o /rds/general/project/lemontree/live/ephemeral/conversion_^array_index^.out
+#PBS -o /rds/general/project/lemontree/ephemeral/conversion_^array_index^.out
 
 # Env vars needed:
 #
@@ -26,7 +26,7 @@ source activate python3.10
 
 python --version
 
-echo -e "In PBS.SH and running:\n VAR: $VAR\n  OUTDIR_SUFFIX: $OUTDIR_SUFFIX\n  ARR_IND:  $PBS_ARRAY_INDEX\n  PACK: ${PACK:-Not set}"
+echo -e "In PBS.SH and running:\n VAR: $VAR\n  OUTDIR_SUFFIX: $OUTDIR_SUFFIX\n  ARR_IND:  $PBS_ARRAY_INDEX\n  YEARONE: ${YEARONE:-Not set}"
 
 python /rds/general/project/lemontree/live/source/SNU_Ryu_FPAR_LAI/compile_and_encode_SNU_Ryu.py
 
