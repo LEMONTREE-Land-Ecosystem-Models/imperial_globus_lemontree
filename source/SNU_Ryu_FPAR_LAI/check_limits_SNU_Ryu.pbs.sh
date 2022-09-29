@@ -5,7 +5,7 @@
 
 # Use the throughput class - single node, single cpu
 
-#PBS -lselect=1:ncpus=1:mem=96gb
+#PBS -lselect=1:ncpus=1:mem=96gb:gpfs=true
 #PBS -lwalltime=24:00:00
 #PBS -j oe
 #PBS -o limit_checker.out
