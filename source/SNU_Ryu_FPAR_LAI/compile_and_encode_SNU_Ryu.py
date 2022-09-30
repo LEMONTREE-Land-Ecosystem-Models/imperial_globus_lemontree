@@ -170,7 +170,7 @@ base_grid = np.ndarray(
 )
 
 # Loop over the files
-for day_idx, this_file in year_files:
+for day_idx, (day_num, this_file) in enumerate(year_files):
 
     report_mem(process, f"Loading day: {day_idx}; ")
 
