@@ -146,11 +146,12 @@ if var_info is None:
 
 # Use 65535 in files as missing data
 NULL_VALUE = var_info["missing_value"]
+file_var = var_info["file_var"]
 
 # Recursive search for all files across years - directory structure is variable - and
 # then filter down to the requested year
-input_file_dir = os.path.join(dir_root, f"{var}_daily_005d_V1")
-input_year_files = Path(input_file_dir).rglob(f"{var}_Daily_005d.*.nc")
+input_file_dir = os.path.join(dir_root, f"{file_var}_daily_005d_V1")
+input_year_files = Path(input_file_dir).rglob(f"{file_var}_Daily_005d.*.nc")
 
 # Jeepers, this is quick. 15K files almost instantly.
 year_filter = [(yr_regex.search(p.name).groups(), p) for p in input_year_files]
