@@ -53,16 +53,18 @@ dir_root = "/rds/general/project/lemontree/ephemeral/SNU_data_sharing_Sep_2022"
 # Get memory profiler
 process = psutil.Process(os.getpid())
 
+
 def report_mem(process, prefix="") -> None:
     """Report on memory usage."""
     mem = process.memory_info()[0] / float(2**30)
     sys.stdout.write(f"{prefix}Memory usage: {mem}\n")
     sys.stdout.flush()
 
+
 # Variable dictionary
 var_dict = {
     "FPAR": {
-        "file_var": "FPAR",        
+        "file_var": "FPAR",
         "data_var": "FPAR",
         "scale_factor": 64000,  # Mapping 0 - 1 into 0 - 64000
         "add_offset": 0,
@@ -70,9 +72,11 @@ var_dict = {
         # Throw away values over 1 and set <0 to zero
         "discard_above": 1,
         "clamp_below": 0,
+        "encode_type": np.uint16,
+        "missing_value": 65535,
     },
     "LAI": {
-        "file_var": "LAI",        
+        "file_var": "LAI",
         "data_var": "LAI",
         "scale_factor": 6400,  # Mapping 0 - 10 into 0 - 64000
         "add_offset": 0,
@@ -80,9 +84,11 @@ var_dict = {
         # No edits to raw data
         "discard_above": None,
         "clamp_below": None,
+        "encode_type": np.uint16,
+        "missing_value": 65535,
     },
     "PAR": {
-        "file_var": "PAR",        
+        "file_var": "PAR",
         "data_var": "PAR",
         "scale_factor": 500,  # Mapping 0 - 128 into 0 - 64000
         "add_offset": 0,
@@ -90,9 +96,11 @@ var_dict = {
         # Set <0  to zero
         "discard_above": None,
         "clamp_below": 0,
+        "encode_type": np.uint16,
+        "missing_value": 65535,
     },
     "Rg": {
-        "file_var": "Rg",        
+        "file_var": "Rg",
         "data_var": "Rg",
         "scale_factor": 1280,  # Mapping 0 - 50 into 0 - 64000
         "add_offset": 0,
@@ -100,9 +108,11 @@ var_dict = {
         # Set <0  to zero
         "discard_above": None,
         "clamp_below": 0,
+        "encode_type": np.uint16,
+        "missing_value": 65535,
     },
     "NIRv": {
-        "file_var": "NIRv",        
+        "file_var": "NIRv",
         "data_var": "NIRv",
         "scale_factor": 75000,  # Mapping -0.1 - 0.755 into 0 - 64000
         "add_offset": -0.1,
@@ -110,27 +120,32 @@ var_dict = {
         # Set inf values to NA using arbitrary large value
         "discard_above": 1e7,
         "clamp_below": None,
+        "encode_type": np.uint16,
+        "missing_value": 65535,
     },
-    "NIRvQA": {
-        "file_var": "LAI",        
-        "data_var": "NIRv",
-        "scale_factor": 640,  # Mapping 0 to 100 into 0 - 64000
-        "add_offset": -0.1,
-        "fill": -1,
+    "MCD43C4": {
+        "file_var": "NIRv",
+        "data_var": "MCD43C4 qc",
+        "scale_factor": None,  # Already integer encoding
+        "add_offset": None,
+        "fill": 255,
         # Throw away values over 1 and set <0 to zero
         "discard_above": None,
         "clamp_below": None,
+        "encode_type": np.uint8,
+        "missing_value": 255,
     },
 }
 
-# Use 65535 in files as missing data
-NULL_VALUE = 65535
 
 # Get the details for this variable
 var_info = var_dict.get(var, None)
 
 if var_info is None:
     raise ValueError(f"Unknown variable: {var}")
+
+# Use 65535 in files as missing data
+NULL_VALUE = var_info["missing_value"]
 
 # Recursive search for all files across years - directory structure is variable - and
 # then filter down to the requested year
@@ -150,7 +165,7 @@ latitude = np.arange(90 - res / 2, -90, -res)
 
 # Make a 3D array in uint16 to complete for the year following CF TZYX recommendation
 base_grid = np.ndarray(
-    (len(year_files), len(latitude), len(longitude)), dtype=np.uint16
+    (len(year_files), len(latitude), len(longitude)), dtype=var_info["encode_type"]
 )
 
 # Loop over the files
@@ -177,10 +192,13 @@ for day_idx, this_file in year_files:
             (mat >= var_info["clamp_below"]) | mat.isnull(), var_info["clamp_below"]
         )
 
-    # Encode to uint16
-    mat_np = np.round(
-        (mat + var_info["add_offset"]) * var_info["scale_factor"], 0
-    ).astype(np.uint16)
+    # Encode
+    if (var_info["add_offset"] is not None) and (var_info["scale_factor"] is not None):
+        mat_np = np.round(
+            (mat + var_info["add_offset"]) * var_info["scale_factor"], 0
+        ).astype(var_info["encode_type"])
+    else:
+        mat_np = mat.astype(var_info["encode_type"])
 
     mat_np = mat_np.where(mat.notnull(), NULL_VALUE)
 
@@ -196,7 +214,7 @@ sys.stdout.flush()
 
 # Create the xarray object holding the data
 days = np.array([d - 1 for d, _ in year_files])
-dates = np.datetime64(str(year), 'D') + days.astype('timedelta64[D]')  
+dates = np.datetime64(str(year), "D") + days.astype("timedelta64[D]")
 
 
 print("dates created", end="\n", flush=True)
@@ -209,10 +227,14 @@ print("dates created", end="\n", flush=True)
 # Extend the existing variable attributes
 var_attrs = {
     **mat.attrs,
-    "scale_factor": 1 / var_info["scale_factor"],
-    "add_offset": var_info["add_offset"],
     "_FillValue": NULL_VALUE,
 }
+
+if var_info["scale_factor"] is not None:
+    var_attrs["scale_factor"] = 1 / var_info["scale_factor"]
+
+if var_info["add_offset"] is not None:
+    var_attrs["add_offset"] = 1 / var_info["add_offset"]
 
 if var_info["discard_above"] is not None:
     var_attrs[
@@ -223,7 +245,6 @@ if var_info["clamp_below"] is not None:
     var_attrs[
         "clamp_below"
     ] = f"Values below {var_info['clamp_below']} set to {var_info['clamp_below']}"
-
 
 xds = xarray.DataArray(
     base_grid,
