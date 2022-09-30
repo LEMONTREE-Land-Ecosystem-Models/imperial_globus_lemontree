@@ -32,7 +32,7 @@ var_list = {
     "PAR": ["PAR", "PAR", -10],
     "Rg": ["Rg", "Rg", -10],
     "NIRv": ["NIRv", "NIRv", -1],
-    "MCD43C4": ["NIRv", " MCD43C4 qc", 255],
+    "MCD43C4": ["NIRv", "MCD43C4 qc", 255],
 }
 
 if var not in var_list:
@@ -50,7 +50,7 @@ year_files = [(yr_regex.search(p.name).groups(), p) for p in input_year_files]
 year_files.sort()
 
 # Create an output file
-outfile = os.path.join(dir_root, "limits", var, f"{var_name}_limits.csv")
+outfile = os.path.join(dir_root, "limits", f"{var_name}_limits.csv")
 
 with open(outfile, "w", buffering=1024) as outf:
 
@@ -68,8 +68,8 @@ with open(outfile, "w", buffering=1024) as outf:
 
         # Set NAs and count and remove inf
         mat = mat.where(mat != missing_value)
-        na_count = mat.isnull().sum()
-        inf_count = np.isinf(mat).sum()
+        na_count = int(mat.isnull().sum())
+        inf_count = int(np.isinf(mat).sum())
         mat = mat.where(np.isfinite(mat))
 
         # Report limits
