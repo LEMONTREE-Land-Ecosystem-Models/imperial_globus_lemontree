@@ -8,8 +8,7 @@ import xarray
 import psutil
 
 """
-This script is used to compile individual daily files from SNU into more easily useable
-annual files. It also uses encoding to compress the file sizes from float32 to uint16.
+This script is used to compile individual daily files from SNU into monthly files.
 
 The script is intended to be submitted with an array job to loop over years with the
 following environment variables set:
@@ -65,74 +64,26 @@ var_dict = {
     "FPAR": {
         "file_var": "FPAR",
         "data_var": "FPAR",
-        "scale_factor": 64000,  # Mapping 0 - 1 into 0 - 64000
-        "add_offset": 0,
-        "fill": -10,
-        # Throw away values over 1 and set <0 to zero
-        "discard_above": 1,
-        "clamp_below": 0,
-        "encode_type": np.uint16,
-        "missing_value": 65535,
     },
     "LAI": {
         "file_var": "LAI",
         "data_var": "LAI",
-        "scale_factor": 6400,  # Mapping 0 - 10 into 0 - 64000
-        "add_offset": 0,
-        "fill": -10,
-        # No edits to raw data
-        "discard_above": None,
-        "clamp_below": None,
-        "encode_type": np.uint16,
-        "missing_value": 65535,
     },
     "PAR": {
         "file_var": "PAR",
         "data_var": "PAR",
-        "scale_factor": 500,  # Mapping 0 - 128 into 0 - 64000
-        "add_offset": 0,
-        "fill": -10,
-        # Set <0  to zero
-        "discard_above": None,
-        "clamp_below": 0,
-        "encode_type": np.uint16,
-        "missing_value": 65535,
     },
     "Rg": {
         "file_var": "Rg",
         "data_var": "Rg",
-        "scale_factor": 1280,  # Mapping 0 - 50 into 0 - 64000
-        "add_offset": 0,
-        "fill": -10,
-        # Set <0  to zero
-        "discard_above": None,
-        "clamp_below": 0,
-        "encode_type": np.uint16,
-        "missing_value": 65535,
     },
     "NIRv": {
         "file_var": "NIRv",
         "data_var": "NIRv",
-        "scale_factor": 75000,  # Mapping -0.1 - 0.755 into 0 - 64000
-        "add_offset": -0.1,
-        "fill": -1,
-        # Set inf values to NA using arbitrary large value
-        "discard_above": 1e7,
-        "clamp_below": None,
-        "encode_type": np.uint16,
-        "missing_value": 65535,
     },
     "MCD43C4": {
         "file_var": "NIRv",
         "data_var": "MCD43C4 qc",
-        "scale_factor": None,  # Already integer encoding
-        "add_offset": None,
-        "fill": 255,
-        # Throw away values over 1 and set <0 to zero
-        "discard_above": None,
-        "clamp_below": None,
-        "encode_type": np.uint8,
-        "missing_value": 255,
     },
 }
 
@@ -143,8 +94,6 @@ var_info = var_dict.get(var, None)
 if var_info is None:
     raise ValueError(f"Unknown variable: {var}")
 
-# Use 65535 in files as missing data
-NULL_VALUE = var_info["missing_value"]
 file_var = var_info["file_var"]
 
 # Recursive search for all files across years - directory structure is variable - and
@@ -173,10 +122,8 @@ for this_month in np.arange(1, 13):
     # Reduce to monthly files - should preserve order
     month_files = [df for df, m in zip(year_files, months) if m == this_month]
 
-    # Make a 3D array in encoding dtype to complete for the year following CF TZYX recommendation
-    base_grid = np.ndarray(
-        (len(month_files), len(latitude), len(longitude)), dtype=var_info["encode_type"]
-    )
+    # Make a 3D array in uint16 to complete for the year following CF TZYX recommendation
+    base_grid = np.ndarray((len(month_files), len(latitude), len(longitude)))
 
     # Loop over the files
     for day_idx, (day_num, this_file) in enumerate(month_files):
@@ -188,67 +135,14 @@ for this_month in np.arange(1, 13):
         mat = xarray.load_dataset(this_file)
         mat = mat[var_info["data_var"]]
 
-        # Set missing values - note that the test in DataArray.where() identifies the values
-        # to _keep_, and the other values are replaced by the second value (default NA)
-        mat = mat.where(mat != var_info["fill"])
-
-        # Data tidying - set nulls first and then clamp. Need to explicitly exclude nulls
-        # from clamping operations.
-        if var_info["discard_above"] is not None:
-            mat = mat.where(mat <= var_info["discard_above"])
-
-        if var_info["clamp_below"] is not None:
-            mat = mat.where(
-                (mat >= var_info["clamp_below"]) | mat.isnull(), var_info["clamp_below"]
-            )
-
-        # Encode
-        if (var_info["add_offset"] is not None) and (
-            var_info["scale_factor"] is not None
-        ):
-            mat_np = np.round(
-                (mat + var_info["add_offset"]) * var_info["scale_factor"], 0
-            ).astype(var_info["encode_type"])
-        else:
-            mat_np = mat.astype(var_info["encode_type"])
-
-        mat_np = mat_np.where(mat.notnull(), NULL_VALUE)
-
         # insert into the correct day of year
-        base_grid[day_idx - 1, :, :] = mat_np.T
+        base_grid[day_idx - 1, :, :] = mat.T
 
     # Reporting
     report_mem(process, "Data loaded; ")
 
     sys.stdout.write(f"Range: {np.nanmin(base_grid)} {np.nanmax(base_grid)}\n")
     sys.stdout.flush()
-
-    #  Manual unit16 encoding
-    #  - xarray does provide the 'encoding' argument to to_netcdf(), but the memory
-    #    management of this (make copy, set NA, cast copy) uses 2.5 x data in RAM, with
-    #    some odd spikes. This script does that manually and sets attributes directly.
-
-    # Extend the existing variable attributes
-    var_attrs = {
-        **mat.attrs,
-        "_FillValue": NULL_VALUE,
-    }
-
-    if var_info["scale_factor"] is not None:
-        var_attrs["scale_factor"] = 1 / var_info["scale_factor"]
-
-    if var_info["add_offset"] is not None:
-        var_attrs["add_offset"] = 1 / var_info["add_offset"]
-
-    if var_info["discard_above"] is not None:
-        var_attrs[
-            "discard_above"
-        ] = f"Values above {var_info['discard_above']} set to missing"
-
-    if var_info["clamp_below"] is not None:
-        var_attrs[
-            "clamp_below"
-        ] = f"Values below {var_info['clamp_below']} set to {var_info['clamp_below']}"
 
     xds = xarray.DataArray(
         base_grid,
@@ -259,7 +153,7 @@ for this_month in np.arange(1, 13):
         ],
         dims=["time", "latitude", "longitude"],
         name=var_info["data_var"],
-        attrs=var_attrs,
+        attrs=mat.attrs,
     )
 
     report_mem(process, "DataArray created; ")
