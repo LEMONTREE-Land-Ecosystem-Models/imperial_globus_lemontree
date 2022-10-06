@@ -1,6 +1,5 @@
 import os
 import sys
-import datetime
 import re
 from pathlib import Path
 
@@ -153,10 +152,14 @@ file_var = var_info["file_var"]
 input_file_dir = os.path.join(dir_root, f"{file_var}_daily_005d_V1")
 input_year_files = Path(input_file_dir).rglob(f"{file_var}_Daily_005d.*.nc")
 
-# Jeepers, this is quick. 15K files almost instantly.
 year_filter = [(yr_regex.search(p.name).groups(), p) for p in input_year_files]
 year_filter.sort()
 year_files = [(int(dy), fl) for ((yr, dy), fl) in year_filter if int(yr) == year]
+
+# Create dates and split by months
+days = np.array([d - 1 for d, _ in year_files])
+dates = np.datetime64(str(year), "D") + days.astype("timedelta64[D]")
+months = dates.astype('datetime64[M]').astype(int) % 12 + 1
 
 # Create lat and long dimensions using cell centres: note _deliberate_
 # overrun at end of sequence to avoid clipping last value
@@ -169,101 +172,100 @@ base_grid = np.ndarray(
     (len(year_files), len(latitude), len(longitude)), dtype=var_info["encode_type"]
 )
 
-# Loop over the files
-for day_idx, (day_num, this_file) in enumerate(year_files):
+# Loop over months
+for this_month in np.arange(1, 13):
 
-    report_mem(process, f"Loading day: {day_idx}; ")
+    # Reduce to monthly files - should preserve order
+    month_files = [df for df, m in zip(year_files, months) if m == this_month]
 
-    # Load the data and reduce to the data array (this is really just about handling
-    # NIRv and the NIRv QA - all the rest are single data variable)
-    mat = xarray.load_dataset(this_file)
-    mat = mat[var_info["data_var"]]
+    # Loop over the files
+    for day_idx, (day_num, this_file) in enumerate(month_files):
 
-    # Set missing values - note that the test in DataArray.where() identifies the values
-    # to _keep_, and the other values are replaced by the second value (default NA)
-    mat = mat.where(mat != var_info["fill"])
+        report_mem(process, f"Loading day: {day_idx}; ")
 
-    # Data tidying - set nulls first and then clamp. Need to explicitly exclude nulls
-    # from clamping operations.
+        # Load the data and reduce to the data array (this is really just about handling
+        # NIRv and the NIRv QA - all the rest are single data variable)
+        mat = xarray.load_dataset(this_file)
+        mat = mat[var_info["data_var"]]
+
+        # Set missing values - note that the test in DataArray.where() identifies the values
+        # to _keep_, and the other values are replaced by the second value (default NA)
+        mat = mat.where(mat != var_info["fill"])
+
+        # Data tidying - set nulls first and then clamp. Need to explicitly exclude nulls
+        # from clamping operations.
+        if var_info["discard_above"] is not None:
+            mat = mat.where(mat <= var_info["discard_above"])
+
+        if var_info["clamp_below"] is not None:
+            mat = mat.where(
+                (mat >= var_info["clamp_below"]) | mat.isnull(), var_info["clamp_below"]
+            )
+
+        # Encode
+        if (var_info["add_offset"] is not None) and (var_info["scale_factor"] is not None):
+            mat_np = np.round(
+                (mat + var_info["add_offset"]) * var_info["scale_factor"], 0
+            ).astype(var_info["encode_type"])
+        else:
+            mat_np = mat.astype(var_info["encode_type"])
+
+        mat_np = mat_np.where(mat.notnull(), NULL_VALUE)
+
+        # insert into the correct day of year
+        base_grid[day_idx - 1, :, :] = mat_np.T
+
+
+    # Reporting
+    report_mem(process, "Data loaded; ")
+
+    sys.stdout.write(f"Range: {np.nanmin(base_grid)} {np.nanmax(base_grid)}\n")
+    sys.stdout.flush()
+
+    #  Manual unit16 encoding
+    #  - xarray does provide the 'encoding' argument to to_netcdf(), but the memory
+    #    management of this (make copy, set NA, cast copy) uses 2.5 x data in RAM, with
+    #    some odd spikes. This script does that manually and sets attributes directly.
+
+    # Extend the existing variable attributes
+    var_attrs = {
+        **mat.attrs,
+        "_FillValue": NULL_VALUE,
+    }
+
+    if var_info["scale_factor"] is not None:
+        var_attrs["scale_factor"] = 1 / var_info["scale_factor"]
+
+    if var_info["add_offset"] is not None:
+        var_attrs["add_offset"] = 1 / var_info["add_offset"]
+
     if var_info["discard_above"] is not None:
-        mat = mat.where(mat <= var_info["discard_above"])
+        var_attrs[
+            "discard_above"
+        ] = f"Values above {var_info['discard_above']} set to missing"
 
     if var_info["clamp_below"] is not None:
-        mat = mat.where(
-            (mat >= var_info["clamp_below"]) | mat.isnull(), var_info["clamp_below"]
-        )
+        var_attrs[
+            "clamp_below"
+        ] = f"Values below {var_info['clamp_below']} set to {var_info['clamp_below']}"
 
-    # Encode
-    if (var_info["add_offset"] is not None) and (var_info["scale_factor"] is not None):
-        mat_np = np.round(
-            (mat + var_info["add_offset"]) * var_info["scale_factor"], 0
-        ).astype(var_info["encode_type"])
-    else:
-        mat_np = mat.astype(var_info["encode_type"])
+    xds = xarray.DataArray(
+        base_grid,
+        coords=[
+            dates[months == this_month],
+            xarray.DataArray(latitude, attrs=mat["lat"].attrs),
+            xarray.DataArray(longitude, attrs=mat["lon"].attrs),
+        ],
+        dims=["time", "latitude", "longitude"],
+        name=var_info["data_var"],
+        attrs=var_attrs,
+    )
 
-    mat_np = mat_np.where(mat.notnull(), NULL_VALUE)
+    report_mem(process, "DataArray created; ")
 
-    # insert into the correct day of year
-    base_grid[day_idx - 1, :, :] = mat_np.T
+    # Save to disk - creating output directory
+    out_dir = os.path.join(dir_root, f"{var}_{outdir_suffix}")
+    os.makedirs(out_dir, exist_ok=True)
+    out_file = os.path.join(out_dir, f"{var}_{year}_{this_month}.nc")
 
-
-# Reporting
-report_mem(process, "Data loaded; ")
-
-sys.stdout.write(f"Range: {np.nanmin(base_grid)} {np.nanmax(base_grid)}\n")
-sys.stdout.flush()
-
-# Create the xarray object holding the data
-days = np.array([d - 1 for d, _ in year_files])
-dates = np.datetime64(str(year), "D") + days.astype("timedelta64[D]")
-
-
-print("dates created", end="\n", flush=True)
-
-#  Manual unit16 encoding
-#  - xarray does provide the 'encoding' argument to to_netcdf(), but the memory
-#    management of this (make copy, set NA, cast copy) uses 2.5 x data in RAM, with
-#    some odd spikes. This script does that manually and sets attributes directly.
-
-# Extend the existing variable attributes
-var_attrs = {
-    **mat.attrs,
-    "_FillValue": NULL_VALUE,
-}
-
-if var_info["scale_factor"] is not None:
-    var_attrs["scale_factor"] = 1 / var_info["scale_factor"]
-
-if var_info["add_offset"] is not None:
-    var_attrs["add_offset"] = 1 / var_info["add_offset"]
-
-if var_info["discard_above"] is not None:
-    var_attrs[
-        "discard_above"
-    ] = f"Values above {var_info['discard_above']} set to missing"
-
-if var_info["clamp_below"] is not None:
-    var_attrs[
-        "clamp_below"
-    ] = f"Values below {var_info['clamp_below']} set to {var_info['clamp_below']}"
-
-xds = xarray.DataArray(
-    base_grid,
-    coords=[
-        dates,
-        xarray.DataArray(latitude, attrs=mat["lat"].attrs),
-        xarray.DataArray(longitude, attrs=mat["lon"].attrs),
-    ],
-    dims=["time", "latitude", "longitude"],
-    name=var_info["data_var"],
-    attrs=var_attrs,
-)
-
-report_mem(process, "DataArray created; ")
-
-# Save to disk - creating output directory
-out_dir = os.path.join(dir_root, f"{var}_{outdir_suffix}")
-os.makedirs(out_dir, exist_ok=True)
-out_file = os.path.join(out_dir, f"{var}_{year}.nc")
-
-xds.to_netcdf(out_file, encoding={var_info["data_var"]: {"zlib": True, "complevel": 6}})
+    xds.to_netcdf(out_file, encoding={var_info["data_var"]: {"zlib": True, "complevel": 6}})

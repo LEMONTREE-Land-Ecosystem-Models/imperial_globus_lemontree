@@ -18,7 +18,7 @@
 #        e.g. OUTDIR_SUFFIX=in_here -> FPAR_in_here
 # * Use YEARONE to set the earliest year
 # Example:
-# qsub -v VAR=FPAR,OUTDIR_SUFFIX=test,YEARONE=2000 convert_SNU_Ryu_to_netcdf.pbs.sh 
+# qsub -v VAR=FPAR,OUTDIR_SUFFIX=test,YEARONE=2000 compile_and_encode_SNU_Ryu.pbs.sh 
 
 module load anaconda3/personal
 
