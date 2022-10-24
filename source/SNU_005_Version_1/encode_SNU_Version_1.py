@@ -11,14 +11,13 @@ following environment variables set:
 """
 
 import os
-import sys
 import re
+import sys
 from pathlib import Path
 
 import numpy as np
-import xarray
 import psutil
-
+import xarray
 
 # TODO - look at gathering to save space - cf-python implements reading and
 #        unpacking back to 2D really elegantly but xarray and netcdf4 read the
