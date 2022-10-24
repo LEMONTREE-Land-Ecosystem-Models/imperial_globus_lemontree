@@ -140,7 +140,7 @@ file_var = var_info["file_var"]
 
 # Get the files to encode
 input_file_dir = os.path.join(dir_root, f"{file_var}_raw")
-input_year_files = Path(input_file_dir).rglob(f"{file_var}*.nc")
+input_year_files = Path(input_file_dir).glob(f"{file_var}*.nc")
 
 year_filter = [(yr_regex.search(p.name).groups(), p) for p in input_year_files]
 year_filter.sort()
