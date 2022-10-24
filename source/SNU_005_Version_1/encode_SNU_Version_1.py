@@ -210,8 +210,8 @@ for this_month in year_files:
         ] = f"Values below {var_info['clamp_below']} set to {var_info['clamp_below']}"
 
     # Remove the 'fill' attribute - old NA value
-    if 'fill' in var_info:
-        del var_info['fill']
+    if 'fill' in var_attrs:
+        del var_attrs['fill']
 
     xds = xarray.DataArray(
         mat_cast,
