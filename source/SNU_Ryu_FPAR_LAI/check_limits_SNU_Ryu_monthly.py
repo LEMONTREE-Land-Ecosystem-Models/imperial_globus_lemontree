@@ -68,8 +68,8 @@ with open(outfile, "w", buffering=1024) as outf:
 
         # Set NAs and count and remove inf
         mat = mat.where(mat != missing_value)
-        na_count = mat.isnull().sum()
-        inf_count = np.isinf(mat).sum()
+        na_count = int(mat.isnull().sum())
+        inf_count = int(np.isinf(mat).sum())
         mat = mat.where(np.isfinite(mat))
 
         # Report limits
