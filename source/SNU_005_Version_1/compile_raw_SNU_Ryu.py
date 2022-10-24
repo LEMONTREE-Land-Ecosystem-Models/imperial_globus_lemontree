@@ -159,7 +159,7 @@ for this_month in np.arange(1, 13):
     # Save to disk - creating output directory
     out_dir = os.path.join(dir_root, f"{var}_{outdir_suffix}")
     os.makedirs(out_dir, exist_ok=True)
-    out_file = os.path.join(out_dir, f"{var}_{year}_{this_month}.nc")
+    out_file = os.path.join(out_dir, f"{var}_{year}_{this_month:02}.nc")
 
     xds.to_netcdf(
         out_file, encoding={var_info["data_var"]: {"zlib": True, "complevel": 6}}
