@@ -15,7 +15,7 @@
 # * Use VAR to set the variable 
 
 # Example:
-# qsub -v VAR=FPAR check_limits_SNU_Ryu.pbs.sh 
+# qsub -v VAR=FPAR check_limits_SNU_Ryu_monthly.pbs.sh 
 
 module load anaconda3/personal
 

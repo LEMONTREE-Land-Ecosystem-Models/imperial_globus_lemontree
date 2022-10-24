@@ -1,13 +1,5 @@
-import os
-import sys
-import re
-from pathlib import Path
+"""Compile daily files to monthly.
 
-import numpy as np
-import xarray
-import psutil
-
-"""
 This script is used to compile individual daily files from SNU into monthly files.
 
 The script is intended to be submitted with an array job to loop over years with the
@@ -18,9 +10,14 @@ following environment variables set:
 * the earliest year to process in YEARONE
 """
 
-# TODO - look at gathering to save space - cf-python implements reading and
-#        unpacking back to 2D really elegantly but xarray and netcdf4 read the
-#        fine but need unpacking separately (not built in)
+import os
+import re
+import sys
+from pathlib import Path
+
+import numpy as np
+import psutil
+import xarray
 
 # Environment variables
 var = os.getenv("VAR")
@@ -122,7 +119,8 @@ for this_month in np.arange(1, 13):
     # Reduce to monthly files - should preserve order
     month_files = [df for df, m in zip(year_files, months) if m == this_month]
 
-    # Make a 3D array in uint16 to complete for the year following CF TZYX recommendation
+    # Make a 3D array in uint16 to complete for the year following
+    # CF TZYX recommendation
     base_grid = np.ndarray((len(month_files), len(latitude), len(longitude)))
 
     # Loop over the files
@@ -130,8 +128,8 @@ for this_month in np.arange(1, 13):
 
         report_mem(process, f"Loading day: {day_idx}; ")
 
-        # Load the data and reduce to the data array (this is really just about handling
-        # NIRv and the NIRv QA - all the rest are single data variable)
+        # Load the data and reduce to the data array (this is really just about
+        # handling NIRv and the NIRv QA - all the rest are single data variable)
         mat = xarray.load_dataset(this_file)
         mat = mat[var_info["data_var"]]
 
