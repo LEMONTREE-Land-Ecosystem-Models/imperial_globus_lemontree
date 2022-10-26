@@ -18,7 +18,7 @@
 #        e.g. OUTDIR_SUFFIX=in_here -> FPAR_in_here
 # * Use YEARONE to set the earliest year
 # Example:
-# qsub -v VAR=FPAR,OUTDIR_SUFFIX=test,YEARONE=2000 compile_raw_SNU_Ryu.pbs.sh 
+# qsub -v VAR=FPAR,OUTDIR_SUFFIX=test,YEARONE=2000 compile_raw_SNU_Version_1.pbs.sh 
 
 module load anaconda3/personal
 
@@ -28,6 +28,6 @@ python --version
 
 echo -e "In PBS.SH and running:\n VAR: $VAR\n  OUTDIR_SUFFIX: $OUTDIR_SUFFIX\n  ARR_IND:  $PBS_ARRAY_INDEX\n  YEARONE: ${YEARONE:-Not set}"
 
-python /rds/general/project/lemontree/live/source/SNU_Ryu_FPAR_LAI/compile_raw_SNU_Ryu.py
+python /rds/general/project/lemontree/live/source/SNU_005_Version_1/compile_raw_SNU_Version_1.py
 
 conda deactivate
