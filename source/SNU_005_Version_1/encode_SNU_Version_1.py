@@ -106,7 +106,7 @@ var_dict = {
     "NIRv": {
         "file_var": "NIRv",
         "scale_factor": 75000,  # Mapping -0.1 - 0.755 into 0 - 64000
-        "add_offset": -0.1,
+        "add_offset": 0.1,
         "fill": -1,
         # Set inf values to NA using arbitrary large value
         "discard_above": 1e7,
@@ -144,7 +144,7 @@ input_year_files = Path(input_file_dir).glob(f"{file_var}*.nc")
 
 year_filter = [(yr_regex.search(p.name).groups(), p) for p in input_year_files]
 year_filter.sort()
-year_files = [fl for ((yr, ), fl) in year_filter if int(yr) == year]
+year_files = [fl for ((yr,), fl) in year_filter if int(yr) == year]
 
 # Loop over months
 for this_month in year_files:
@@ -172,9 +172,7 @@ for this_month in year_files:
     #   management of this (make copy, set NA, cast copy) uses 2.5 x data in RAM, with
     #   some odd spikes. This script does that manually and sets attributes directly.
 
-    if (var_info["add_offset"] is not None) and (
-        var_info["scale_factor"] is not None
-    ):
+    if (var_info["add_offset"] is not None) and (var_info["scale_factor"] is not None):
         mat_cast = np.round(
             (mat + var_info["add_offset"]) * var_info["scale_factor"], 0
         ).astype(var_info["encode_type"])
@@ -210,16 +208,12 @@ for this_month in year_files:
         ] = f"Values below {var_info['clamp_below']} set to {var_info['clamp_below']}"
 
     # Remove the 'fill' attribute - old NA value
-    if 'fill' in var_attrs:
-        del var_attrs['fill']
+    if "fill" in var_attrs:
+        del var_attrs["fill"]
 
     xds = xarray.DataArray(
         mat_cast,
-        coords=[
-            mat['time'],
-            mat['latitude'],
-            mat['longitude']
-        ],
+        coords=[mat["time"], mat["latitude"], mat["longitude"]],
         dims=["time", "latitude", "longitude"],
         name=file_var,
         attrs=var_attrs,
@@ -232,6 +226,4 @@ for this_month in year_files:
     os.makedirs(out_dir, exist_ok=True)
     out_file = os.path.join(out_dir, this_month.name)
 
-    xds.to_netcdf(
-        out_file, encoding={file_var: {"zlib": True, "complevel": 6}}
-    )
+    xds.to_netcdf(out_file, encoding={file_var: {"zlib": True, "complevel": 6}})
