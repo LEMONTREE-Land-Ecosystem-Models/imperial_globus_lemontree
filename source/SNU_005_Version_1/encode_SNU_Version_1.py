@@ -106,7 +106,7 @@ var_dict = {
     "NIRv": {
         "file_var": "NIRv",
         "scale_factor": 75000,  # Mapping -0.1 - 0.755 into 0 - 64000
-        "add_offset": 0.1,
+        "add_offset": -0.1,
         "fill": -1,
         # Set inf values to NA using arbitrary large value
         "discard_above": 1e7,
@@ -174,7 +174,7 @@ for this_month in year_files:
 
     if (var_info["add_offset"] is not None) and (var_info["scale_factor"] is not None):
         mat_cast = np.round(
-            (mat + var_info["add_offset"]) * var_info["scale_factor"], 0
+            (mat - var_info["add_offset"]) * var_info["scale_factor"], 0
         ).astype(var_info["encode_type"])
     else:
         mat_cast = mat.astype(var_info["encode_type"])
