@@ -153,6 +153,7 @@ def download_ceda_directory_cli():
         user=args.user,
         ftp_passwd=args.ftp_passwd,
         exclude=tuple(args.exclude),
+        dry_run=args.dry_run,
     )
 
     return not success
