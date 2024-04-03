@@ -143,7 +143,9 @@ def download_ceda_directory_cli():
     # Print a short text report
     report_string = f"Downloading: {args.ceda_path}\nDestination: {args.out_dir}\n"
     if args.exclude:
-        report_string += f"Excluding: {','.join(args.exclude)}"
+        report_string += f"Excluding: {','.join(args.exclude)}\n"
+    if args.dry_run:
+        report_string += "DRY RUN: No files downloaded\n"
 
     print(report_string)
 
