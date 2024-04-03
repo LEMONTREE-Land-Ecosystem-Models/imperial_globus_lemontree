@@ -15,6 +15,7 @@ def download_ceda_directory(
     user: str,
     ftp_passwd: str,
     exclude: tuple[str, ...] = (),
+    dry_run: bool = False,
 ) -> bool:
     """Download the contents of a remote CEDA directory.
 
@@ -25,6 +26,8 @@ def download_ceda_directory(
         ftp_passwd: A valid CEDA FTP password - note that this is not the same as the
             users CEDA login password and needs to be created from their account page.
         exclude: A tuple of strings to match files to be excluded.
+        dry_run: Prints out the expected file downloads and exclusions without
+            downloading.
     """
 
     # Try and get the connection
@@ -42,8 +45,6 @@ def download_ceda_directory(
     current_working_path: list[str] = []
     directory_stack: list[list[str]] = []
     directory_stack_exhausted = False
-
-    print(exclude)
 
     try:
         while not directory_stack_exhausted:
@@ -69,8 +70,9 @@ def download_ceda_directory(
                     local_file = local_dir.joinpath(fname)
 
                     try:
-                        # with open(local_file, "wb") as fp:
-                        #     ftp_conn.retrbinary(f"RETR {remote_file}", fp.write)
+                        if not dry_run:
+                            with open(local_file, "wb") as fp:
+                                ftp_conn.retrbinary(f"RETR {remote_file}", fp.write)
                         print(f"Downloaded: {remote_file}")
                     except ftplib.error_perm as err:
                         print(f"FTP error: {str(err)}")
@@ -124,6 +126,12 @@ def download_ceda_directory_cli():
         action="append",
         help="Exclude files matching these strings",
     )
+    parser.add_argument(
+        "--dry-run",
+        type=bool,
+        help="Dry run showing files to be downloaded or excluded.",
+        action="store_true",
+    )
 
     args = parser.parse_args()
 
@@ -133,7 +141,12 @@ def download_ceda_directory_cli():
         print(f"Output directory not found: {out_dir}")
         return 1
 
-    print(args.exclude)
+    # Print a short text report
+    report_string = f"Downloading: {args.ceda_path}\nDestination: {args.out_dir}\n"
+    if args.exclude:
+        report_string += f"Excluding: {','.join(args.exclude)}"
+
+    print(report_string)
 
     success = download_ceda_directory(
         ceda_path=args.ceda_path,
