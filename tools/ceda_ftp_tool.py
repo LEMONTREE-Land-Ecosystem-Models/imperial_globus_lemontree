@@ -94,7 +94,7 @@ def download_ceda_directory(
 
 
 def download_ceda_directory_cli():
-    """Download a CEDA directory via FTP.
+    r"""Download a CEDA directory via FTP.
 
     This command line tool takes a relative path within the CEDA data archive and
     recursively downloads the contents to a provided output directory. A CEDA username
@@ -128,7 +128,6 @@ def download_ceda_directory_cli():
     )
     parser.add_argument(
         "--dry-run",
-        type=bool,
         help="Dry run showing files to be downloaded or excluded.",
         action="store_true",
     )
