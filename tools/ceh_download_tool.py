@@ -35,10 +35,17 @@ def download_ceh_directory(
         print(f"Could not connect to CEH: {str(response.reason)}")
         return False
 
-    # Define a link parser that will populate a list of files.
+    # Define a link parser that will populate a list of files. The problem here is that
+    # the index page is just a list of links, including links to sort the page and a
+    # link back to the parent directory. There's no obvious way to identify files from
+    # other links apart from the rather hacky approach here of throwing away links
+    # before the first <HR> tag, which shows the start of the files listing, and
+    # discarding the link found right before the data "Parent Directory" is found.
     link_list = []
 
     class LinkParser(HTMLParser):
+
+        hr_encountered = False
 
         def handle_starttag(
             self, tag: str, attrs: list[tuple[str, str | None]]
@@ -48,6 +55,15 @@ def download_ceh_directory(
                 attrs_dict = dict(attrs)
                 if "href" in attrs_dict:
                     link_list.append(attrs_dict["href"])
+
+            elif tag == "hr" and not self.hr_encountered:
+                link_list.clear()
+                self.hr_encountered = True
+
+        def handle_data(self, data) -> None:
+
+            if data == "Parent Directory":
+                link_list.pop()
 
     parser = LinkParser()
     parser.feed(response.text)
