@@ -49,13 +49,13 @@ outfile = Path(input_file_dir) / f"{var_name}_distribution.csv"
 bins = np.arange(hist_lo, hist_hi, hist_step)
 
 
-with open(outfile, "w", buffering=1024) as outf:
+with open(outfile, "w", buffering=1) as outf:
 
     # Write headers
     outf.write(f"file,N_na,N_inf,lo,{','.join([f'{x:0.2f}' for x in bins])},hi\n")
 
     # Add lower and upper limits to bins
-    bins = np.concatenate([-np.inf, bins, np.inf])
+    bins = np.concatenate([[-np.inf], bins, [np.inf]])
 
     # Loop over the files
     for this_file in input_files:
@@ -78,5 +78,5 @@ with open(outfile, "w", buffering=1024) as outf:
         counts, edges = np.histogram(mat, bins)
         # Report limits
         outf.write(
-            f"{this_file},{na_count},{inf_count},{','.join([f'{x:0.2f}' for x in bins])}\n"
+            f"{this_file},{na_count},{inf_count},{','.join([f'{x}' for x in counts])}\n"
         )
