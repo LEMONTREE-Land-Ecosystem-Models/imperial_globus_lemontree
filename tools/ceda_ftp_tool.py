@@ -1,40 +1,47 @@
 """This tool can be used to recursively download a directory from CEDA.
 
-It uses FTP.
+It uses requests.
 """
 
+import requests
 from pathlib import Path
-import ftplib
-import argparse
-import textwrap
+from requests.auth import HTTPBasicAuth
+
+from html.parser import HTMLParser
 
 
-def download_ceda_directory(
-    ceda_path: str,
+class LinkParser(HTMLParser):
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+
+        if tag == "a":
+            print(attrs)
+
+
+def download_ceh_directory(
+    ceh_path: str,
     out_dir: Path,
     user: str,
-    ftp_passwd: str,
+    passwd: str,
     exclude: tuple[str, ...] = (),
     dry_run: bool = False,
 ) -> bool:
-    """Download the contents of a remote CEDA directory.
+    """Download the contents of a remote CEH directory.
 
     Args:
-        ceda_path: The directory name within CEDA to be downloaded
+        ceh_path: The directory name within CEDA to be downloaded
         out_dir: A base path to download into
-        user: A valid CEDA user account name
-        ftp_passwd: A valid CEDA FTP password - note that this is not the same as the
-            users CEDA login password and needs to be created from their account page.
+        user: A valid CEH user account name
+        passwd: A valid CEH password
         exclude: A tuple of strings to match files to be excluded.
         dry_run: Prints out the expected file downloads and exclusions without
             downloading.
     """
 
     # Try and get the connection
-    try:
-        ftp_conn = ftplib.FTP(host="ftp.ceda.ac.uk", user=user, passwd=ftp_passwd)
-    except ftplib.error_perm as err:
-        print(f"Could not connect to CEDA: {str(err)}")
+    response = requests.get(ceh_path, auth=HTTPBasicAuth(user, passwd))
+    if not response.ok:
+        print(f"Could not connect to CEH: {str(response.reason)}")
         return False
 
     # Try and walk the directory from the base path - the directory stack is used to

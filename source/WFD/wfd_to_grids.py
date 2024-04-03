@@ -12,7 +12,7 @@ root = Path("/rds/general/project/lemontree/live")
 land_map = xarray.load_dataset(root / "source/WFD/SWDown/WFD-land-lat-long-z.nc")
 
 # Load the requested year and get the files to compile
-year = os.getenv("YEAR")
+year = os.getenv("PBS_ARRAY_INDEX")
 paths = list((root / "source/WFD/SWDown/").glob(f"SWdown_WFD_{year}*"))
 paths.sort()
 
