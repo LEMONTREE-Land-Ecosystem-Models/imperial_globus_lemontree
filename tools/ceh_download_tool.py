@@ -30,7 +30,8 @@ def download_ceh_directory(
     """
 
     # Try and get an authenticated response from the path
-    response = requests.get(ceh_path, auth=HTTPBasicAuth(user, passwd))
+    auth = HTTPBasicAuth(user, passwd)
+    response = requests.get(ceh_path, auth=auth)
     if not response.ok:
         print(f"Could not connect to CEH: {str(response.reason)}")
         return False
@@ -74,7 +75,7 @@ def download_ceh_directory(
         print(f"Downloading: {file}")
 
         if not dry_run:
-            response = requests.get(ceh_path + file)
+            response = requests.get(ceh_path + file, auth=auth)
 
             if response.ok:
                 with open(out_dir.joinpath(file), "wb") as outf:
