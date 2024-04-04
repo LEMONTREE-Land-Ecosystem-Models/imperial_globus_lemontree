@@ -28,6 +28,10 @@ python --version
 
 echo -e "In PBS.SH and running"
 
+date
+
 python /rds/general/project/lemontree/live/derived/potential_gpp/potential_gpp.py
+
+date
 
 conda deactivate
