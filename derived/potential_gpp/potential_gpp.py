@@ -38,8 +38,8 @@ with gzip.open(
 tmn = tmn_xarr.where(tmn_xarr["time.year"] == year, drop=True).to_numpy()
 vap = vap_xarr.where(vap_xarr["time.year"] == year, drop=True).to_numpy()
 
-# Convert hPa VP to VPD
-vpd = convert_vp_to_vpd(vp=vap * 10, ta=tmn)
+# Convert VP in hPa to VPD in Pa
+vpd = convert_vp_to_vpd(vp=vap * 10, ta=tmn) * 1000
 
 # Load interpolated merge of CMIP3 CO2 forcings and NOAA Mauna Loa observations.
 # See derived/co2/co2_cmip3_noaa_interpolated.py for details.
