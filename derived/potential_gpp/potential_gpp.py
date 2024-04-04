@@ -1,14 +1,16 @@
+import gzip
+import os
+from pathlib import Path
+
 import xarray
 import numpy as np
-import gzip
 import pandas
-from pathlib import Path
 
 from pyrealm.hygro import convert_vp_to_vpd
 from pyrealm.pmodel import calc_patm
 from pyrealm.pmodel import PModelEnvironment, PModel
 
-year = 1905
+year = int(os.getenv("PBS_ARRAY_INDEX"))
 
 root = Path("/rds/general/project/lemontree/live")
 
