@@ -90,7 +90,6 @@ pmodel_c4 = PModel(env=env, method_optchi="c4")
 pmodel_c3.estimate_productivity(fapar=1, ppfd=ppfd)
 pmodel_c4.estimate_productivity(fapar=1, ppfd=ppfd)
 
-
 # Export data - need to use nanosecond precision because of xarray/pandas, which leads
 # to spuriously accurate midnight on first of month values
 time_coords = np.arange(
@@ -109,4 +108,4 @@ export_data = xarray.Dataset(
     },
 )
 
-export_data.to_netcdf(root / "derived/test.nc")
+export_data.to_netcdf(root / f"derived/potential_gpp/data/potential_gpp_{year}.nc")
