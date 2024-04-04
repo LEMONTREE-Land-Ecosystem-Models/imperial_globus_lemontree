@@ -36,6 +36,9 @@ co2_cmip3_monthly = pandas.DataFrame(
 # Create a single time series
 co2 = pandas.concat([co2_cmip3_monthly, co2_noaa[["year", "month", "average"]]])
 
+# Formatting and naming
+co2.rename(columns={"average": "average_co2_ppm"}, inplace=True)
+co2["average_co2_ppm"] = co2["average_co2_ppm"].round(3)
 co2.to_csv(
-    root / "derived/co2/co2_cmip3_noaa_interpolated.csv", index_label=None, na_rep="NA"
+    root / "derived/co2/co2_cmip3_noaa_interpolated.csv", index=False, na_rep="NA"
 )
