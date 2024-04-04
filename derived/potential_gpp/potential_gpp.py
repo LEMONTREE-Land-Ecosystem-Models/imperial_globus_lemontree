@@ -17,8 +17,11 @@ root = Path("/rds/general/project/lemontree/live")
 # CRU TS data: Mean monthly temperature (°C) and Mean monthly vapour pressure (hPa)
 # Dimensions:  (lon: 720, lat: 360, time: 120)
 
-decade_start = round(year, -1) + 1
-cruts_dates = f"{decade_start}.{decade_start + 9}"
+# Find the correct decadal file
+cru_ts_decades = np.arange(1901, 2021).reshape(12, 10)
+cru_ts_decade_strings = [f"{rw[0]}.{rw[9]}" for rw in cru_ts_decades]
+decade_index, _ = np.where(cru_ts_decades == year)
+cruts_dates = cru_ts_decade_strings[decade_index[0]]
 
 with gzip.open(
     root / f"source/cru_ts/cru_ts_4.07/data/tmn/cru_ts4.07.{cruts_dates}.tmn.dat.nc.gz"
