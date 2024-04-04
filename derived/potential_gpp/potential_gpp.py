@@ -63,6 +63,7 @@ if year < 1979:
     swdown_xarr = xarray.load_dataset(
         root / f"source/WFD/SWDown_gridded/WFD_SWDOWN_{year}.nc"
     )
+    swdown_var = "swdown"
 else:
     wfde_files = list(
         (root / f"source/wfde5/wfde5_v2/SWdown/{year}").glob(
@@ -70,12 +71,13 @@ else:
         )
     )
     swdown_xarr = xarray.open_mfdataset(wfde_files)
+    swdown_var = "SWdown"
 
 # Calculate the monthly mean
 swdown_monthly_mean = swdown_xarr.groupby("time.month").mean()
 
 # Get PPFD - slower step for WFDE5
-ppfd = swdown_monthly_mean["SWdown"].to_numpy() * 2.04
+ppfd = swdown_monthly_mean[swdown_var].to_numpy() * 2.04
 
 # Clean input variables for bad values
 tmn = np.where(tmn < -25.0, np.nan, tmn)
