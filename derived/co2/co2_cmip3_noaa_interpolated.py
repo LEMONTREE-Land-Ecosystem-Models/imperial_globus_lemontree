@@ -3,12 +3,12 @@ import pandas
 from pathlib import Path
 from scipy.interpolate import interp1d
 
-root = Path("/rds/general/project/lemontree/live/source")
+root = Path("/rds/general/project/lemontree/live/")
 
 # Load global CO2 data and interpolate to monthly values to join CMIP3 to NOAA
 # observations
-co2_cmip3 = pandas.read_csv(root / "CMIP3_CO2/CMIP3_CO2_1850_2011.csv")
-co2_noaa = pandas.read_csv(root / "NOAA_CO2/co2_mm_gl.csv", skiprows=55)
+co2_cmip3 = pandas.read_csv(root / "source/CMIP3_CO2/CMIP3_CO2_1850_2011.csv")
+co2_noaa = pandas.read_csv(root / "source/NOAA_CO2/co2_mm_gl.csv", skiprows=55)
 
 # Get mid year date for annual value and set up an interpolator function
 co2_cmip3["date"] = co2_cmip3["year"].astype("str") + "-07-01"
