@@ -95,16 +95,20 @@ pmodel_c4 = PModel(env=env, method_optchi="c4")
 pmodel_c3.estimate_productivity(fapar=1, ppfd=ppfd)
 pmodel_c4.estimate_productivity(fapar=1, ppfd=ppfd)
 
-# Export data - need to use nanosecond precision because of xarray/pandas, which leads
-# to spuriously accurate midnight on first of month values
+# Export data
+# - Need to use nanosecond precision because of xarray/pandas, which leads to spuriously
+#   accurate midnight on first of month values. Might need to revisit this.
+# - Export values as single precision float. No need for double precision, save half the
+#   file size.
+# - Compress the data to save more file size.
 time_coords = np.arange(
     np.datetime64(f"{year}-01"), np.datetime64(f"{year + 1}-01"), np.timedelta64(1, "M")
 ).astype("datetime64[ns]")
 
 export_data = xarray.Dataset(
     data_vars=dict(
-        potential_gpp_c3=(["time", "lat", "lon"], pmodel_c3.gpp),
-        potential_gpp_c4=(["time", "lat", "lon"], pmodel_c4.gpp),
+        potential_gpp_c3=(["time", "lat", "lon"], pmodel_c3.gpp.astype(np.float32)),
+        potential_gpp_c4=(["time", "lat", "lon"], pmodel_c4.gpp.astype(np.float32)),
     ),
     coords={
         "time": time_coords,
@@ -113,4 +117,10 @@ export_data = xarray.Dataset(
     },
 )
 
-export_data.to_netcdf(root / f"derived/potential_gpp/data/potential_gpp_{year}.nc")
+export_data.to_netcdf(
+    path=root / f"derived/potential_gpp/data/potential_gpp_{year}.nc",
+    encoding={
+        "potential_gpp_c3": {"zlib": True, "complevel": 6},
+        "potential_gpp_c4": {"zlib": True, "complevel": 6},
+    },
+)
