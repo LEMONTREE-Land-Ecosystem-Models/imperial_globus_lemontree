@@ -8,14 +8,14 @@
 #   will need to run as a single job to iterate over the soil moisture years in turn.
 #
 # * Running a single year may be too short for a sensible job spec, in which case the
-#   array index could be used to loop over a decade
+#   array index could be used to loop over decades for the 1901 - 2018 data
 #
 # * Use the throughput class - single node, single cpu, using GPFS for better file
 #   handling
 
 #PBS -lselect=1:ncpus=8:mem=96gb:gpfs=true
 #PBS -lwalltime=24:00:00
-#PBS -J 1901-2001
+#PBS -J 1901-2018
 #PBS -j oe
 #PBS -o /rds/general/project/lemontree/ephemeral/potential_gpp_^array_index^.out
 

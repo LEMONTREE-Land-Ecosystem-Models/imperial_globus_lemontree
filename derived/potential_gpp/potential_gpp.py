@@ -10,6 +10,7 @@ from pyrealm.hygro import convert_vp_to_vpd
 from pyrealm.pmodel import calc_patm
 from pyrealm.pmodel import PModelEnvironment, PModel
 
+
 year = int(os.getenv("PBS_ARRAY_INDEX"))
 
 root = Path("/rds/general/project/lemontree/live")
@@ -38,8 +39,8 @@ with gzip.open(
 tmn = tmn_xarr.where(tmn_xarr["time.year"] == year, drop=True).to_numpy()
 vap = vap_xarr.where(vap_xarr["time.year"] == year, drop=True).to_numpy()
 
-# Convert VP in hPa to VPD in Pa
-vpd = convert_vp_to_vpd(vp=vap * 10, ta=tmn) * 1000
+# Convert VP in hPa to kPA and then to VPD in kPa and then to VPD in Pa
+vpd = convert_vp_to_vpd(vp=vap / 10, ta=tmn) * 1000
 
 # Load interpolated merge of CMIP3 CO2 forcings and NOAA Mauna Loa observations.
 # See derived/co2/co2_cmip3_noaa_interpolated.py for details.
@@ -61,7 +62,7 @@ patm = np.broadcast_to(patm[None, ...], vpd.shape)
 # Load PPFD data from WFD (1900 - 1978, 3 hourly) or WFDE5 v2 (1979 - 2018, half hourly)
 # Note that the load step for WFD is time consuming, because it loads the data, but the
 # open_mfdataset for WFDE5 is lazy and so the time consuming step comes when the data is
-# accesssed to be converted to PPFD below
+# accesssed to be converted to PPFD below.
 if year < 1979:
     swdown_xarr = xarray.load_dataset(
         root / f"source/WFD/SWDown_gridded/WFD_SWDOWN_{year}.nc"
@@ -79,7 +80,8 @@ else:
 # Calculate the monthly mean
 swdown_monthly_mean = swdown_xarr.groupby("time.month").mean()
 
-# Get PPFD - slower step for WFDE5
+# Get PPFD - slower step for WFDE5. Both sources provide SWDown in W/m2, converted to
+# PPFD inµmol/m2/s using 2.04 µmol W-1.
 ppfd = swdown_monthly_mean[swdown_var].to_numpy() * 2.04
 
 # Clean input variables for bad values
