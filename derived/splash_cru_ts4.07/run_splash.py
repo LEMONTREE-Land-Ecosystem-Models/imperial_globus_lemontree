@@ -33,7 +33,7 @@ data_by_decade = [
 elev = xarray.load_dataarray(
     root / "source/wfde5/wfde5_v2/Elev/ASurf_WFDE5_CRU_v2.0.nc"
 )
-elev = elev.isel(lat=slice(170, 190), lon=slice(350, 370))
+# elev = elev.isel(lat=slice(170, 190), lon=slice(350, 370))
 
 elev_np = elev.to_numpy()
 
@@ -54,7 +54,7 @@ def process_data(decade_files):
         # Read the monthly data from the gz file.
         with gzip.open(file) as fp:
             monthly_data = xarray.load_dataset(fp.read())[var]
-            monthly_data = monthly_data.isel(lat=slice(170, 190), lon=slice(350, 370))
+            # monthly_data = monthly_data.isel(lat=slice(170, 190), lon=slice(350, 370))
 
         # Use forward fill (ffill) to go from monthly to daily observations, which
         # requires:
@@ -115,7 +115,7 @@ for decade_files in data_by_decade:
 
     sys.stdout.write(
         f"Processing decade {str(decade_files['tmp'])[-23:-14]} "
-        f"at {datetime.datetime.now().isoformat(timespec='seconds')}"
+        f"at {datetime.datetime.now().isoformat(timespec='seconds')}\n"
     )
 
     # This is repetitive - refits first decade, but clearer to read and develop
