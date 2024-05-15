@@ -5,7 +5,7 @@
 # Uses the throughput class - single node, single cpu, using GPFS for better file
 # handling,
 
-#PBS -lselect=1:ncpus=1:mem=96gb:gpfs=true
+#PBS -lselect=1:ncpus=1:mem=100gb:gpfs=true
 #PBS -lwalltime=24:00:00
 #PBS -j oe
 #PBS -o /rds/general/project/lemontree/ephemeral/run_splash.out
@@ -21,7 +21,7 @@ echo -e "In PBS.SH and running"
 
 date
 
-python /rds/general/project/lemontree/live/derived/splash_cru_ts4.07/run_splash.py
+python /rds/general/project/lemontree/live/derived/splash_cru_ts4.07/run_splash_v2.py
 
 date
 
