@@ -40,10 +40,13 @@ elev_np = elev.to_numpy()
 class ProcessData():
     """CRU data loader.
     
-    Helper function to:
+    Helper class to:
     * load the three forcing variables for a decade 
     * interpolate from monthly to daily observations 
     * convert cloud cover to sunshine fraction as (1 - cld/100)
+
+    Provides the get_daily_data method to interpolate daily data for individual years,
+    which uses a lower memory footprint than using an entire decade of daily values.
     """
 
     def __init__(self, decade_files):
@@ -83,8 +86,14 @@ class ProcessData():
         self.monthly_data['sf'] = 1 - self.monthly_data['cld']/100
         del self.monthly_data['cld']
 
-        # Remove low temperatures
+        # Remove low temperatures by clipping to -25
         self.monthly_data['tmp'] = self.monthly_data['tmp'].clip(min=-25)
+
+        # # TODO - does it make more sense to remove these values entirely - this will
+        # # disrupt predictions for cold months rather than having an arbitrary floor
+        # self.monthly_data['tmp'] = self.monthly_data['tmp'].where(
+        #     self.monthly_data['tmp'] >= -25
+        # )
 
         # Get the years provided by this instance (remembering to exclude the last
         # padded day)
@@ -159,7 +168,7 @@ for decade_files in data_by_decade:
             f"Processing {year} "
             f"at {datetime.datetime.now().isoformat(timespec='seconds')}\n"
         )
-        
+
         this_year = this_decade.get_daily_data(year)
 
         # Calendar object
