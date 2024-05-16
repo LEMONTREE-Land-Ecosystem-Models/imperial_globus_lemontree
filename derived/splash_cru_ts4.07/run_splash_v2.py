@@ -149,7 +149,7 @@ splash = SplashModel(
 )
 
 # Spin up the first year - some issues with convergence so doing something approximate
-init_wn = splash.estimate_initial_soil_moisture(verbose=True, max_iter=30, max_diff=1.5)
+init_wn = splash.estimate_initial_soil_moisture(verbose=True, max_iter=30, max_diff=1.6)
 
 for decade_files in data_by_decade:
 
