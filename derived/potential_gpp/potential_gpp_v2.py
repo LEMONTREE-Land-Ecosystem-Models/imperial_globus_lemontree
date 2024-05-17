@@ -99,7 +99,7 @@ for cru_decade in cru_data_by_decade:
 
         # Reporting
         print(
-            f"Processing {year} "
+            f"Running {year} "
             f"at {datetime.datetime.now().isoformat(timespec='seconds')}\n", 
             flush=True
         )
@@ -127,6 +127,10 @@ for cru_decade in cru_data_by_decade:
             swdown_xarr = xarray.load_dataset(
                 root / f"source/WFD/SWDown_gridded/WFD_SWDOWN_{year}.nc"
             )
+            # The latitude axis is reversed compared to the other datasets and this
+            # information gets lost once data are stripped down to numpy arrays, so
+            # reverse this here.
+            swdown_xarr = swdown_xarr.isel(lat=slice(None, None, -1))
             swdown_var = "swdown"
         else:
             wfde_files = list(
