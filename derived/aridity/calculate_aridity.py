@@ -51,5 +51,8 @@ for year, file in splash_files:
     outpath = root / f"derived/aridity/data/soilmstress_mengoli_{year}.nc"
     soilm_data.to_netcdf(outpath)
 
+# Export the annual aridity indices
 annual_ai_data = xarray.concat(annual_ai_arrays, dim='time')
+annual_ai_data.rename(time='year')
+annual_ai_data.name = 'aridity_index'
 annual_ai_data.to_netcdf(root / "derived/aridity/data/annual_aridity_indices.nc")
