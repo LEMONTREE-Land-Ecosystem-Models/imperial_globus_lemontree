@@ -23,7 +23,7 @@ echo -e "In PBS.SH and running"
 
 date
 
-python /rds/general/project/lemontree/projects/vpd_and_gpp/site_extractor.py
+python /rds/general/project/lemontree/live/projects/vpd_and_gpp/site_extractor.py
 
 date
 
