@@ -61,7 +61,9 @@ for var in wfde_vars:
     # Get a list of all the files across years for this variable. The open_mfdataset
     # creates a meta-dataset across multiple files that can then be used to select data.
     # The contents of the files are not loaded until actually needed for processing.
-    wfde_files = list((wfde_path / var).rglob("*.nc"))
+    var_directory = wfde_path / var
+    print(var_directory)
+    wfde_files = list(var_directory.rglob("*.nc"))
     wfde_data = xr.open_mfdataset(wfde_files)
 
     # Find the cell closest to the provided site coordinates
