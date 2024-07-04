@@ -55,7 +55,7 @@ compiled_data = {}
 # WFDE5 DATA
 # -----------------
 wfde_path = root / "source/wfde5/wfde5_v2/"
-wfde_vars = ["PSurf" "Qair", "SWdown", "Tair"]
+wfde_vars = ["PSurf", "Qair", "SWdown", "Tair"]
 
 for var in wfde_vars:
     # Get a list of all the files across years for this variable. The open_mfdataset
