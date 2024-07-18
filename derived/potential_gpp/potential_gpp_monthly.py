@@ -217,7 +217,7 @@ for cru_decade in cru_data_by_decade:
         )
 
         export_data.to_netcdf(
-            path=root / f"derived/potential_gpp/data/potential_gpp_{year}.nc",
+            path=root / f"derived/potential_gpp/data/monthly_potential_gpp_{year}.nc",
             encoding={
                 "pot_gpp_c3_default_kphio": {"zlib": True, "complevel": 6},
                 "pot_gpp_c4_default_kphio": {"zlib": True, "complevel": 6},
