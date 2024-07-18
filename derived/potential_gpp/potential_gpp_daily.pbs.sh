@@ -24,7 +24,7 @@ echo -e "In PBS.SH and running"
 
 date
 
-python /rds/general/project/lemontree/live/derived/potential_gpp/potential_gpp_v2.py
+python /rds/general/project/lemontree/live/derived/potential_gpp/potential_gpp_daily.py
 
 date
 
