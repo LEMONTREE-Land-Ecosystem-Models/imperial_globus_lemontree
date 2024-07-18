@@ -33,8 +33,6 @@ elev = xarray.load_dataarray(
 patm = calc_patm(elv=elev)
 
 # Data loader class for CRU data
-# TODO - think about whether this needs to change to daily? The SPLASH code has a
-#        similar processor class that fills CRU to daily, if needed.
 
 
 class ProcessData:
@@ -42,7 +40,7 @@ class ProcessData:
 
     Helper class to:
     * load the forcing variables for a decade
-    * provide the get_data method to extract the monthly data for a given year.
+    * provide the get_daily_data method to extract daily data for a given year.
     """
 
     def __init__(self, decade_files):

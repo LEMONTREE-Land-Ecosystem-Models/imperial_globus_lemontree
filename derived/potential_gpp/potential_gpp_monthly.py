@@ -33,8 +33,6 @@ elev = xarray.load_dataarray(
 patm = calc_patm(elv=elev)
 
 # Data loader class for CRU data
-# TODO - think about whether this needs to change to daily? The SPLASH code has a
-#        similar processor class that fills CRU to daily, if needed.
 
 
 class ProcessData:
