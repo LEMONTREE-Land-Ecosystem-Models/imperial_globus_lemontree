@@ -24,7 +24,7 @@ cru_data_by_decade = [{"tmp": t, "vap": v} for t, v in zip(tmp_files, vap_files)
 
 # CO2 DATA: Load interpolated merge of CMIP3 CO2 forcings and NOAA Mauna Loa
 # observations. See derived/co2/co2_cmip3_noaa_interpolated.py for details.
-co2 = pandas.read_csv(root / "derived/co2/co2_cmip3_noaa_interpolated.csv")
+co2 = pandas.read_csv(root / "derived/co2/co2_cmip3_noaa_interpolated_daily.csv")
 
 # ATMOSPHERIC PRESSURE from elevation
 elev = xarray.load_dataarray(
@@ -32,9 +32,8 @@ elev = xarray.load_dataarray(
 ).to_numpy()
 patm = calc_patm(elv=elev)
 
+
 # Data loader class for CRU data
-
-
 class ProcessData:
     """CRU data loader.
 
@@ -46,7 +45,7 @@ class ProcessData:
     def __init__(self, decade_files):
         self.monthly_data = dict()
 
-        # Loop over the three variable files
+        # Loop over the provided decadal files
         for var, file in decade_files.items():
             # Read the monthly data from the gz file.
             with gzip.open(file) as fp:
@@ -160,7 +159,7 @@ for cru_decade in cru_data_by_decade:
             swdown_xarr = xarray.open_mfdataset(wfde_files)
             swdown_var = "SWdown"
 
-        # Calculate the daily mean
+        # Calculate the daily mean SWDown
         swdown_monthly_mean = swdown_xarr.groupby("time.day").mean()
 
         # Get PPFD - slower step for WFDE5. Both sources provide SWDown in W/m2,
