@@ -160,7 +160,7 @@ for cru_decade in cru_data_by_decade:
             swdown_var = "SWdown"
 
         # Calculate the daily mean SWDown
-        swdown_daily_mean = swdown_xarr.groupby("time.day").mean()
+        swdown_daily_mean = swdown_xarr.groupby("time.dayofyear").mean()
 
         # Get PPFD - slower step for WFDE5. Both sources provide SWDown in W/m2,
         # converted to PPFD inµmol/m2/s using 2.04 µmol W-1.
