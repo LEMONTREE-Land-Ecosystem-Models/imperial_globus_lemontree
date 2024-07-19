@@ -160,11 +160,11 @@ for cru_decade in cru_data_by_decade:
             swdown_var = "SWdown"
 
         # Calculate the daily mean SWDown
-        swdown_monthly_mean = swdown_xarr.groupby("time.day").mean()
+        swdown_daily_mean = swdown_xarr.groupby("time.day").mean()
 
         # Get PPFD - slower step for WFDE5. Both sources provide SWDown in W/m2,
         # converted to PPFD inµmol/m2/s using 2.04 µmol W-1.
-        ppfd = swdown_monthly_mean[swdown_var].to_numpy() * 2.04
+        ppfd = swdown_daily_mean[swdown_var].to_numpy() * 2.04
 
         # Fit the P Models with the default Stocker kphio and then with the theoretical
         # maximum value of 1/8
@@ -202,30 +202,30 @@ for cru_decade in cru_data_by_decade:
         export_data = xarray.Dataset(
             data_vars=dict(
                 pot_gpp_c3_default_kphio=(
-                    ["month", "lat", "lon"],
+                    ["day", "lat", "lon"],
                     pmodel_c3_default_kphio.gpp.astype(np.float32),
                 ),
                 pot_gpp_c4_default_kphio=(
-                    ["month", "lat", "lon"],
+                    ["day", "lat", "lon"],
                     pmodel_c4_default_kphio.gpp.astype(np.float32),
                 ),
                 pot_gpp_c3_max_kphio=(
-                    ["month", "lat", "lon"],
+                    ["day", "lat", "lon"],
                     pmodel_c3_max_kphio.gpp.astype(np.float32),
                 ),
                 pot_gpp_c4_max_kphio=(
-                    ["month", "lat", "lon"],
+                    ["day", "lat", "lon"],
                     pmodel_c4_max_kphio.gpp.astype(np.float32),
                 ),
                 mean_monthly_water_stress=(
-                    ["month", "lat", "lon"],
+                    ["day", "lat", "lon"],
                     water_stress_penalty["soilmstress_mengoli"]
                     .to_numpy()
                     .astype(np.float32),
                 ),
             ),
             coords={
-                "month": time_coords,
+                "day": time_coords,
                 "lat": cru_annual_data["tmp"]["lat"],
                 "lon": cru_annual_data["tmp"]["lon"],
             },
