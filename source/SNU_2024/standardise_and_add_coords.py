@@ -10,9 +10,13 @@ geographic coordinates, which is added here.
 import xarray as xr
 import numpy as np
 import pandas as pd
+from pathlib import Path
+
+
+root = Path("/rds/general/project/lemontree/live/source/SNU_2024")
 
 # Open the dataset
-ds = xr.open_dataset("snu_fpar_raw_v1.nc")
+ds = xr.open_dataset(root / "snu_fpar_raw_v1.nc")
 
 # Change the misleading dimension names to standards
 ds = ds.rename_dims({"x": "time", "y": "cell_id", "x2": "latitude", "y2": "longitude"})
@@ -58,4 +62,4 @@ mindex_coords = xr.Coordinates.from_pandas_multiindex(mindex, "cell_id")
 ds = ds.assign_coords(mindex_coords)
 
 # Save a properly dimensioned and extended version of the original data.
-ds.to_netcdf("snu_fpar_cf_v1.nc")
+ds.to_netcdf(root / "snu_fpar_cleaned_v1.nc")

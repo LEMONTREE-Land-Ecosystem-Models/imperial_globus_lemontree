@@ -14,9 +14,14 @@ The code:
 
 import xarray as xr
 import numpy as np
+from pathlib import Path
+
+
+root = Path("/rds/general/project/lemontree/live/source/SNU_2024")
+
 
 # Open the dataset
-ds = xr.open_dataset("snu_fpar_cf_v1.nc")
+ds = xr.open_dataset(root / "snu_fpar_cleaned_v1.nc")
 
 # Get the unique years
 years = set(ds["time"].dt.year.data)
@@ -45,6 +50,6 @@ for this_year in years:
 
     # Compress and save
     reshaped.to_netcdf(
-        f"annual_grids/snu_fpar_cf_v1_{this_year}.nc",
+        root / f"annual_grids/snu_fpar_cf_v1_{this_year}.nc",
         encoding={"fAPAR": {"zlib": True, "complevel": 6}},
     )
