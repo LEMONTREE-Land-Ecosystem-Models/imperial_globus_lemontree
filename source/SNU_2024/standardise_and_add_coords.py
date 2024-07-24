@@ -61,5 +61,9 @@ mindex = pd.MultiIndex.from_arrays(
 mindex_coords = xr.Coordinates.from_pandas_multiindex(mindex, "cell_id")
 ds = ds.assign_coords(mindex_coords)
 
+# The multindex can't be saved to NetCDF, so need to use reindex to drop the indexing,
+# leaving the relevant data in place.
+ds = ds.reset_index("cell_id")
+
 # Save a properly dimensioned and extended version of the original data.
 ds.to_netcdf(root / "snu_fpar_cleaned_v1.nc")
