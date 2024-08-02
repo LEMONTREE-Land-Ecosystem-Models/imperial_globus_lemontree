@@ -18,7 +18,7 @@ project = root / "projects/vpd_and_gpp"
 
 # Load site data and convert to an xarray dataset that can be used
 #  to spatially index the global gridded data
-site_coords = pd.read_csv(project / "site_data.csv")
+site_coords = pd.read_csv(project / "site_data_new.csv")
 
 site_coords_xarray = xr.Dataset(
     data_vars={
@@ -38,15 +38,17 @@ site_coords_xarray = xr.Dataset(
 #   - FAPAR
 # * NOAA CO2 monthly
 #   - CO2
+# * Aridity Data 1901 - 2022
+# - Mengoli soil moisture stress
 
 
 # Define a set of common timestamps and a shared timeslice to select the focal data
-start_date = np.datetime64("2010-01")
+start_date = np.datetime64("1982-01")
 end_date = np.datetime64("2020-01")
 timestamps = np.arange(start_date, end_date, np.timedelta64(1, "M")).astype(
     "datetime64[ns]"
 )
-timeslice = slice(np.datetime64("2010-01-01 00:00"), np.datetime64("2019-12-31 23:59"))
+timeslice = slice(np.datetime64("1982-01-01 00:00"), np.datetime64("2019-12-31 23:59"))
 
 # Create an empty directory to collect processed data arrays to build the new dataset
 compiled_data = {}
@@ -139,6 +141,34 @@ co2_noaa = co2_noaa.assign_coords(time=timestamps)
 # Broadcast data to sites and add data array to compiled data
 co2_noaa, _ = xr.broadcast(co2_noaa, site_coords_xarray)
 compiled_data["co2"] = co2_noaa["co2"]
+
+# -------------------------
+# SOIL MOISTURE (MENGOLI)
+# --------------------------
+
+# Collect all the available files and open them as a meta-dataset
+soilmstress_path = root / "/live/derived/aridity/data/"
+soilmstress_files = list(soilmstress_path.rglob("*.nc"))
+soilmstress_data = xr.open_mfdataset(soilmstress_files)
+
+# Find the cell closest to the provided site coordinates
+site_data = soilmstress_data.sel(
+    lat=site_coords_xarray["lat"], lon=site_coords_xarray["lon"], method="nearest"
+)
+
+# Drop to the target time range
+site_data = site_data.sel(time=timeslice)
+
+# Aggregate to monthly mean values and compute the actual data
+monthly_site_data = site_data.resample(time="1ME").mean().compute()
+
+# Standardise the coordinates from the grid to the sites
+monthly_site_data = monthly_site_data.assign_coords(
+    lat=site_coords_xarray["lat"], lon=site_coords_xarray["lon"], time=timestamps
+)
+
+# Store the data array of the required variable
+compiled_data["SOILMSTRESS"] = monthly_site_data["soilmstress_mengoli"]
 
 # -----------------
 # COMPILE AND EXPORT
