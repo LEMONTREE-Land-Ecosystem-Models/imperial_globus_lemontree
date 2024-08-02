@@ -147,7 +147,7 @@ compiled_data["co2"] = co2_noaa["co2"]
 # --------------------------
 
 # Collect all the available files and open them as a meta-dataset
-soilmstress_path = root / "/live/derived/aridity/data/"
+soilmstress_path = root / "derived/aridity/data/"
 soilmstress_files = list(soilmstress_path.rglob("*.nc"))
 soilmstress_data = xr.open_mfdataset(soilmstress_files)
 
