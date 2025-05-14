@@ -44,7 +44,7 @@ sys.stdout.flush()
 yr_regex = re.compile("_([0-9]{4})_")
 
 # Location of the root directory
-dir_root = "/rds/general/project/lemontree/ephemeral/SNU_data_sharing_Sep_2022"
+dir_root = "/rds/general/project/lemontree/live/incoming"
 
 # Get memory profiler
 process = psutil.Process(os.getpid())
@@ -105,11 +105,11 @@ var_dict = {
     },
     "NIRv": {
         "file_var": "NIRv",
-        "scale_factor": 75000,  # Mapping -0.1 - 0.755 into 0 - 64000
+        "scale_factor": 59000,  # Mapping -0.1 - 1.0 into 0 - 64900
         "add_offset": -0.1,
         "fill": -1,
-        # Set inf values to NA using arbitrary large value
-        "discard_above": 1e7,
+        # Set inf and values > 1.0 (all above ~1.5) to NA 
+        "discard_above": 1.0,
         "clamp_below": None,
         "encode_type": np.uint16,
         "missing_value": 65535,
