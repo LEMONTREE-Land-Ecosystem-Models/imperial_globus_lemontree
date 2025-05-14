@@ -20,3 +20,6 @@ __pycache__/
 
 # Other files
 .DS_Store
+
+# Do not track the `incoming` folder
+incoming
