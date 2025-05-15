@@ -25,7 +25,7 @@ curl -O https://edcintl.cr.usgs.gov/downloads/sciweb1/shared/topo/downloads/GMTE
 unzip be30_grd.zip
 
 # Convert the ArcInfo grid to GeoTIFF, using compression to reduce file size
-gdal_translate -co COMPRESS=LZW -co PREDICTOR=2 be30_grd/hdr.adf be302.tiff
+gdal_translate -co COMPRESS=LZW -co PREDICTOR=2 be30_grd/hdr.adf be30.tiff
 
 # Remove the ArcInfo grid
 rm -r be30_grd
