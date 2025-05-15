@@ -24,12 +24,13 @@ cd be30
 curl -O https://edcintl.cr.usgs.gov/downloads/sciweb1/shared/topo/downloads/GMTED/Grid_ZipFiles/be30_grd.zip
 unzip be30_grd.zip
 
-# Convert the ArcInfo grid to GeoTIFF
-gdal_translate be30_grd/hdr.adf be30.tiff
+# Convert the ArcInfo grid to GeoTIFF, using compression to reduce file size
+gdal_translate -co COMPRESS=LZW -co PREDICTOR=2 be30_grd/hdr.adf be302.tiff
 
 # Remove the ArcInfo grid
 rm -r be30_grd
 rm -r info
+rm be30_grd.aux.xml
 
 cd ../
 
@@ -39,11 +40,12 @@ cd mn30
 curl -O https://edcintl.cr.usgs.gov/downloads/sciweb1/shared/topo/downloads/GMTED/Grid_ZipFiles/mn30_grd.zip
 unzip mn30_grd.zip
 
-# Convert the ArcInfo grid to GeoTIFF
-gdal_translate mn30_grd/hdr.adf mn30.tiff
+# Convert the ArcInfo grid to GeoTIFF, using compression to reduce file size
+gdal_translate -co COMPRESS=LZW -co PREDICTOR=2 mn30_grd/hdr.adf mn30.tiff
 
 # Remove the ArcInfo grid
 rm -r mn30_grd
 rm -r info
+rm mn30_grd.aux.xml
 
 cd ../
