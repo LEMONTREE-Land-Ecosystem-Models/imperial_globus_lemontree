@@ -14,7 +14,7 @@ conda create -n pyrealm_py312 python=3.12
 
 # We need the following packages:
 # Install packages from conda-forge to read TIFF raster data and netCDF files.
-conda install -c conda-forge rasterio xarray dask netCDF4 bottleneck h5netcdf libgdal-hdf5
+conda install -c conda-forge rasterio xarray dask netCDF4 bottleneck h5netcdf libgdal-hdf5 ipython
 # The pyrealm and rioxarray packages are only available on PyPI, so install using pip.
 pip install pyrealm==2.0.0-rc3
 pip install rioxarray

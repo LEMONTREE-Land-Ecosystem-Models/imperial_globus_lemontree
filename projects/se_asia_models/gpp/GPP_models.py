@@ -100,7 +100,7 @@ temperature_data = (temperature_data / 10) - 273.15
 
 # VPD is already in Pa
 vpd_data = load_chelsa_data(
-    path_format=f"vpd/CHELSA_vpd_{{month:02d}}_{year}_V.2.1.tif",
+    path_format="vpd/CHELSA_vpd_{month:02d}_{year}_V.2.1.tif",
     year=year,
     latitude_bounds=latitude_bounds,
     longitude_bounds=longitude_bounds,
@@ -109,7 +109,7 @@ vpd_data = load_chelsa_data(
 # Load the RSDS data in MJ/m2/day
 # NOTE: the filename format here is different from tas and vpd.
 rsds_data = load_chelsa_data(
-    path_format=f"rsds/CHELSA_rsds_{year}_{{month:02d}}_V.2.1.tif",
+    path_format="rsds/CHELSA_rsds_{year}_{month:02d}_V.2.1.tif",
     year=year,
     latitude_bounds=latitude_bounds,
     longitude_bounds=longitude_bounds,
@@ -127,7 +127,7 @@ rsds_data = load_chelsa_data(
 ppfd_data = (rsds_data * 0.001 * 1e6) / (24 * 60 * 60) * 2.04
 
 # -------------------------------------------------------------------------------------
-# Reconciling data dimensions and conversions
+# Reconciling data dimensions
 #
 # - The CHELSA data is the target data shape (12 x nrows x ncols)
 # - Atmospheric data is temporally static (nrows x ncols)
@@ -143,9 +143,9 @@ ppfd_data = (rsds_data * 0.001 * 1e6) / (24 * 60 * 60) * 2.04
 # Broadcast C)2 to spatial dimensions
 co2_data = np.broadcast_to(co2_data[:, None, None], ppfd_data["band_data"].shape)
 
-# Broadcast elevation to temporal dimension
+# Broadcast elevation from single band to 12 month temporal dimension
 patm_data = np.broadcast_to(
-    patm_data["band_data"].to_numpy()[None, :, :], ppfd_data["band_data"].shape
+    patm_data["band_data"].to_numpy(), ppfd_data["band_data"].shape
 )
 
 # Tile the fapar data to match resolution using the Kronecker function
@@ -161,16 +161,18 @@ fapar_data_30_arcsec = np.swapaxes(fapar_data_30_arcsec, 1, 2)
 
 # Load the data into the PModel environment and run the model
 env = PModelEnvironment(
-    tc=temperature_data.to_numpy(),
-    vpd=vpd_data.to_numpy(),
+    tc=temperature_data["band_data"].to_numpy(),
+    vpd=vpd_data["band_data"].to_numpy(),
     patm=patm_data,
     co2=co2_data,
-    ppfd=ppfd_data.to_numpy(),
+    ppfd=ppfd_data["band_data"].to_numpy(),
     fapar=fapar_data_30_arcsec,
 )
 
 pmodel = PModel(env=env)
 
-# Create an xarray of the GPP and save
-predicted_gpp = temperature_data.copy(data=pmodel.gpp)
+# Create a DataArray of the GPP and save
+predicted_gpp = temperature_data["band_data"].copy(data=pmodel.gpp)
+predicted_gpp.name = "PModel_GPP"
+
 predicted_gpp.to_netcdf(output_path / f"se_asia_gpp_{year}.nc")
