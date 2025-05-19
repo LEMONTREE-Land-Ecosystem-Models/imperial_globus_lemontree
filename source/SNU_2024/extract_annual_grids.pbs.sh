@@ -8,18 +8,16 @@
 #PBS -o /rds/general/project/lemontree/ephemeral/extract_annual_grids.out
 
 
-module load anaconda3/personal
+# Activate the conda environment
+eval "$(~/miniforge3/bin/conda shell.bash hook)"
+conda activate pyrealm_py312
 
-source activate python3.10
-
+# Echo the python version and start time
 python --version
-
 echo -e "In PBS.SH and running"
-
 date
 
 python /rds/general/project/lemontree/live/source/SNU_2024/extract_annual_grids.py
 
 date
-
 conda deactivate
