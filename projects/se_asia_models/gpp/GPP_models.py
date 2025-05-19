@@ -141,17 +141,17 @@ ppfd_data = (rsds_data * 0.001 * 1e6) / (24 * 60 * 60) * 2.04
 # -------------------------------------------------------------------------------------
 
 # Broadcast C)2 to spatial dimensions
-co2_data = np.broadcast_to(co2_data[:, None, None], ppfd_data.shape)
+co2_data = np.broadcast_to(co2_data[:, None, None], ppfd_data["band_data"].shape)
 
 # Broadcast elevation to temporal dimension
-patm_data = np.broadcast_to(patm_data[None, :, :], ppfd_data.shape)
+patm_data = np.broadcast_to(patm_data[None, :, :], ppfd_data["band_data"].shape)
 
 # Tile the fapar data to match resolution using the Kronecker function
 # NOTE: Could do something fancier than tiling here.
-fapar_data = np.kron(fapar_data["fAPAR"].to_numpy(), np.ones((1, 6, 6)))
+fapar_data_30_arcsec = np.kron(fapar_data["fAPAR"].to_numpy(), np.ones((1, 6, 6)))
 
 # The fapar data has a different orientation, so need to swap the last two axes
-fapar_data = np.swapaxes(fapar_data, 1, 2)
+fapar_data_30_arcsec = np.swapaxes(fapar_data_30_arcsec, 1, 2)
 
 # -------------------------------------------------------------------------------------
 # Fit the model
@@ -164,7 +164,7 @@ env = PModelEnvironment(
     patm=patm_data,
     co2=co2_data,
     ppfd=ppfd_data.to_numpy(),
-    fapar=fapar_data,
+    fapar=fapar_data_30_arcsec,
 )
 
 pmodel = PModel(env=env)
