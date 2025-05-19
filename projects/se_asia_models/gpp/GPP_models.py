@@ -145,7 +145,7 @@ co2_data = np.broadcast_to(co2_data[:, None, None], ppfd_data["band_data"].shape
 
 # Broadcast elevation to temporal dimension
 patm_data = np.broadcast_to(
-    patm_data.to_numpy()[None, :, :], ppfd_data["band_data"].shape
+    patm_data["band_data"].to_numpy()[None, :, :], ppfd_data["band_data"].shape
 )
 
 # Tile the fapar data to match resolution using the Kronecker function
