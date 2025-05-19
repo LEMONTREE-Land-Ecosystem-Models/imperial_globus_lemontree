@@ -2,7 +2,7 @@
 
 # This script extracts annual geo grids from the cleaned SNU data
 
-#PBS -lselect=1:ncpus=1:mem=96gb:gpfs=true
+#PBS -lselect=1:ncpus=1:mem=96gb
 #PBS -lwalltime=24:00:00
 #PBS -j oe
 #PBS -o /rds/general/project/lemontree/ephemeral/extract_annual_grids.out
