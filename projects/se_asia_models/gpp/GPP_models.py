@@ -1,5 +1,6 @@
 # This is a draft of the Python code for running the GPP models
 
+from contextlib import redirect_stdout
 from pathlib import Path
 
 import numpy as np
@@ -174,5 +175,11 @@ pmodel = PModel(env=env)
 # Create a DataArray of the GPP and save
 predicted_gpp = temperature_data["band_data"].copy(data=pmodel.gpp)
 predicted_gpp.name = "PModel_GPP"
-
 predicted_gpp.to_netcdf(output_path / f"se_asia_gpp_{year}.nc")
+
+# Write out the environment and model summarize() outputs for simple checking
+with open(output_path / f"se_asia_gpp_{year}_summary.txt", "w") as f:
+    with redirect_stdout(f):
+        print(f"P Model and environment summaries for {year}\n")
+        env.summarize()
+        pmodel.summarize()
