@@ -107,7 +107,10 @@ vpd_data = load_chelsa_data(
     longitude_bounds=longitude_bounds,
 )
 
-# Load the RSDS data in MJ/m2/day
+# Load the RSDS data in MJ/m2/day. The raw data is integer and scaled by a factor of
+# 0.001, but the rasterio engine to xarray automatically applies any scale and offset in
+# specified in the file metadata (mask_and_scale=True, by default).
+
 # NOTE: the filename format here is different from tas and vpd.
 rsds_data = load_chelsa_data(
     path_format="rsds/CHELSA_rsds_{year}_{month:02d}_V.2.1.tif",
@@ -116,16 +119,16 @@ rsds_data = load_chelsa_data(
     longitude_bounds=longitude_bounds,
 )
 
-# The RSDS data is in MJ/m2/day and is saved as integer and scaled by a factor of 0.001.
+# The RSDS data is in MJ/m2/day
 # We need to convert to PPFD values in umol/m2/s.
 
-# The data are integer values (max 26299)
-# * scale by a factor of 0.001 to MJ/m2/day (max 26.299)
+# The data are integer values (max 26299), automatically scaled on loading by a factor
+# of 0.001 to MJ/m2/day (max 26.299). We then need to:
 # * multiply by 1e6 to J/m2/day (max 26299000)
 # * divide by 24 * 60 * 60 to J/m2/s (max ~304)
 # * and then scale from J/m2/s (= W/m2) to µmol/m2/s (1W ~ 4.57 µmol m2 s1 and roughly
 #   44% is photosynthetically active radiation) so 4.57 * 0.44 ~ 2.04 (max ~621)
-ppfd_data = (rsds_data * 0.001 * 1e6) / (24 * 60 * 60) * 2.04
+ppfd_data = (rsds_data * 1e6) / (24 * 60 * 60) * 2.04
 
 # -------------------------------------------------------------------------------------
 # Reconciling data dimensions
@@ -175,10 +178,10 @@ pmodel = PModel(env=env)
 # Create a DataArray of the GPP and save
 predicted_gpp = temperature_data["band_data"].copy(data=pmodel.gpp)
 predicted_gpp.name = "PModel_GPP"
-predicted_gpp.to_netcdf(output_path / f"se_asia_gpp_{year}.nc")
+predicted_gpp.to_netcdf(output_path / f"data/se_asia_gpp_{year}.nc")
 
 # Write out the environment and model summarize() outputs for simple checking
-with open(output_path / f"se_asia_gpp_{year}_summary.txt", "w") as f:
+with open(output_path / f"data/se_asia_gpp_{year}_summary.txt", "w") as f:
     with redirect_stdout(f):
         print(f"P Model and environment summaries for {year}\n")
         env.summarize()
