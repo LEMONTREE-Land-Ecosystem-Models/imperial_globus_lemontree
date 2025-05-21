@@ -19,8 +19,8 @@ fapar_path = project_root / "source/SNU_2024/annual_grids"
 output_path = project_root / "projects/se_asia_models/gpp/"
 
 # Set the bounds
-longitude_bounds = [88.0, 153.0]
-latitude_bounds = [26.0, -12.0]
+longitude_bounds = [92.0, 141.0]
+latitude_bounds = [29.0, -11.0]
 
 # -------------------------------------------------------------------------------------
 # Data loading and subsetting
@@ -110,7 +110,7 @@ for year in np.arange(1982, 2019):
 
     # Load the CHELSA variables for the model and correct units.
 
-    # Temperature, converting from Kelvin/10 to Celsius
+    # Temperature, converting from Kelvin/10 to Celsius and clipping at -25°C
     # NOTE: The string formatting here requires a placeholder '{year}' for the year and
     #       then a placeholder '{month:02d}' for the load_chelsa_data function to
     #       iterate over the months as '01' to '12'
@@ -120,7 +120,9 @@ for year in np.arange(1982, 2019):
         latitude_bounds=latitude_bounds,
         longitude_bounds=longitude_bounds,
     )
-    temperature_data = (temperature_data / 10) - 273.15
+    temperature_data = np.clip(
+        (temperature_data["band_data"].to_numpy() / 10) - 273.15, a_min=-25
+    )
 
     # VPD is already in Pa
     vpd_data = load_chelsa_data(
@@ -180,7 +182,7 @@ for year in np.arange(1982, 2019):
 
     # Load the data into the PModel environment and run the model
     env = PModelEnvironment(
-        tc=temperature_data["band_data"].to_numpy(),
+        tc=temperature_data,
         vpd=vpd_data["band_data"].to_numpy(),
         patm=patm_data,
         co2=co2_data,
