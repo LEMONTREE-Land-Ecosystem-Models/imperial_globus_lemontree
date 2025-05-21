@@ -39,6 +39,12 @@ elevation_data = elevation_ds.sel(
 
 patm_data = calc_patm(elevation_data)
 
+# Broadcast the single layer of elevation data to 12 months [from (1, 4560, 7800) to
+# (12, 4560, 7800)] and convert to numpy array
+shape = list(patm_data["band_data"].shape)
+shape[0] = 12
+patm = np.broadcast_to(patm_data["band_data"], shape)
+
 # Load the CO2 and extract the 12 values for the year
 co2_data_full = pandas.read_csv(co2_path, comment="#")
 
@@ -82,14 +88,13 @@ def load_chelsa_data(path_format, year, latitude_bounds, longitude_bounds):
 # Year  variable data and modelling
 # - CHELSA is 1979 - 2018
 # - SNU fAPAR is 1982 - 2021
-# - NOAA CO2 is 1979 - 2023 
-# - PATM is constant
+# - NOAA CO2 is 1979 - 2023
+# - PATM is constant
 #
 # Calculate for 1982 to 2018
 # -------------------------------------------------------------------------------------
 
 for year in np.arange(1982, 2019):
-
     print(f"Processing {year}")
 
     # Subset CO2 data to the single year
@@ -158,13 +163,8 @@ for year in np.arange(1982, 2019):
     # * that the inputs are numpy arrays.
     # ---------------------------------------------------------------------------------
 
-    # Broadcast C)2 to spatial dimensions
+    # Broadcast CO2 time series to spatial dimensions
     co2_data = np.broadcast_to(co2_data[:, None, None], ppfd_data["band_data"].shape)
-
-    # Broadcast elevation from single band to 12 month temporal dimension
-    patm_data = np.broadcast_to(
-        patm_data["band_data"].to_numpy(), ppfd_data["band_data"].shape
-    )
 
     # Tile the fapar data to match resolution using the Kronecker function
     # NOTE: Could do something fancier than tiling here.
