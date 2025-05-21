@@ -37,7 +37,6 @@ elevation_data = elevation_ds.sel(
     x=slice(*longitude_bounds),
 )
 
-
 # Calculate atmospheric pressure and broadcast the single layer of data to 12 months
 # [from (1, y, x) to (12, y, x)], implicitly converting it to a numpy array
 
@@ -121,7 +120,9 @@ for year in np.arange(1982, 2019):
         longitude_bounds=longitude_bounds,
     )
     temperature_data = np.clip(
-        (temperature_data["band_data"].to_numpy() / 10) - 273.15, a_min=-25
+        (temperature_data["band_data"].to_numpy() / 10) - 273.15,
+        a_min=-25,
+        a_max=None,
     )
 
     # VPD is already in Pa
@@ -192,8 +193,9 @@ for year in np.arange(1982, 2019):
 
     pmodel = PModel(env=env)
 
-    # Create a DataArray of the GPP and save
-    predicted_gpp = temperature_data["band_data"].copy(data=pmodel.gpp)
+    # Create a DataArray of the GPP using one of the CHELSA inputs as a template and
+    # then save the file as netCDF
+    predicted_gpp = vpd_data["band_data"].copy(data=pmodel.gpp)
     predicted_gpp.name = "PModel_GPP"
     predicted_gpp.to_netcdf(output_path / f"data/se_asia_gpp_{year}.nc")
 
