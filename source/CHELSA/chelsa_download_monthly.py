@@ -29,7 +29,8 @@ for var, file_format in variables:
 
     # Create the output path and run the wget command
     Path(var).mkdir(exist_ok=True)
-    subprocess.run(["wget", "-P", var, "--input-file=input_files.txt"])
+    output_path = "/rds/general/project/lemontree/live/source/CHELSA/" + var
+    subprocess.run(["wget", "-P", output_path, "--input-file=input_files.txt"])
 
     # Remove download file list
     input_files.unlink()
