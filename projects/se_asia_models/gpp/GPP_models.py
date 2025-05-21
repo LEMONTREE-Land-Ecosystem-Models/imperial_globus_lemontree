@@ -83,6 +83,9 @@ def load_chelsa_data(path_format, year, latitude_bounds, longitude_bounds):
 # -------------------------------------------------------------------------------------
 
 for year in np.arange(1979, 2020):
+
+    print(f"Processing {year}")
+
     # Subset CO2 data to the single year
     co2_data = co2_data_full.query(f"year=={year}")["average"].to_numpy()
 

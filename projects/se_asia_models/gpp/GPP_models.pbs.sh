@@ -11,7 +11,7 @@
 # The lines below are the PBS directives. They specify the resources required for the
 # job. 
 
-#PBS -lselect=1:ncpus=1:mem=96gb
+#PBS -lselect=1:ncpus=1:mem=128gb
 #PBS -lwalltime=24:00:00
 #PBS -j oe
 #PBS -o /rds/general/project/lemontree/live/projects/se_asia_models/gpp/GPP_models.out
