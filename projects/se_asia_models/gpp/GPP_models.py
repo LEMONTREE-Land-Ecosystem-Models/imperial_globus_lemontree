@@ -31,19 +31,20 @@ latitude_bounds = [26.0, -12.0]
 # Load the GMTED 2010 elevation at 30 arc seconds
 elevation_ds = xarray.open_dataset(elev_path, engine="rasterio")
 
-# Load the elevation for the region of interest and calculate atmospheric pressure
+# Load the elevation for the region of interest
 elevation_data = elevation_ds.sel(
     y=slice(*latitude_bounds),
     x=slice(*longitude_bounds),
 )
 
-patm_data = calc_patm(elevation_data)
 
-# Broadcast the single layer of elevation data to 12 months [from (1, 4560, 7800) to
-# (12, 4560, 7800)] and convert to numpy array
+# Calculate atmospheric pressure and broadcast the single layer of data to 12 months
+# [from (1, y, x) to (12, y, x)], implicitly converting it to a numpy array
+
+patm_data = calc_patm(elevation_data)
 shape = list(patm_data["band_data"].shape)
 shape[0] = 12
-patm = np.broadcast_to(patm_data["band_data"], shape)
+patm_data = np.broadcast_to(patm_data["band_data"], shape)
 
 # Load the CO2 and extract the 12 values for the year
 co2_data_full = pandas.read_csv(co2_path, comment="#")
