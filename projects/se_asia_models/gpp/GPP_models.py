@@ -80,9 +80,15 @@ def load_chelsa_data(path_format, year, latitude_bounds, longitude_bounds):
 
 # -------------------------------------------------------------------------------------
 # Year  variable data and modelling
+# - CHELSA is 1979 - 2018
+# - SNU fAPAR is 1982 - 2021
+# - NOAA CO2 is 1979 - 2023 
+# - PATM is constant
+#
+# Calculate for 1982 to 2018
 # -------------------------------------------------------------------------------------
 
-for year in np.arange(1979, 2020):
+for year in np.arange(1982, 2019):
 
     print(f"Processing {year}")
 
