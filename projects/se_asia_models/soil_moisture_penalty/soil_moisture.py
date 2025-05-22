@@ -168,12 +168,24 @@ for year in np.arange(1982, 2019):
     # Fit the model
     # ---------------------------------------------------------------------------------
 
+    # Broadcast latitudes and elevation
     data_shape = temperature_data.shape
+    latitude = np.broadcast_to(latitude[None, :, None], data_shape)
+    this_year_elevation = np.broadcast_to(elevation_data, data_shape)
+
+    # Something odd happening with data shapes
+    print(
+        f"\nTemperature: {temperature_data.shape}\n"
+        f"Precipitation: {precipitation_data.shape}\n"
+        f"Cloud: {cloud_data.shape}\n"
+        f"Elevation: {this_year_elevation.shape}\n"
+        f"Latitude: {latitude.shape}\n\n"
+    )
 
     # Load the data into the PModel environment and run the model
     splash = SplashModel(
-        lat=np.broadcast_to(latitude[None, :, None], data_shape),
-        elv=np.broadcast_to(elevation_data, data_shape),
+        lat=latitude,
+        elv=this_year_elevation,
         dates=Calendar(year_days),
         sf=cloud_data,
         tc=temperature_data,
