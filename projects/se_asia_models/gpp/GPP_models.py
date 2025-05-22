@@ -207,5 +207,13 @@ for year in np.arange(1982, 2019):
             pmodel.summarize()
 
     # Try and free up memory
-    del env, pmodel, temperature_data, vpd_data, co2_data, ppfd_data, fapar_data, fapar_data_30_arcsec
-
+    del (
+        env,
+        pmodel,
+        temperature_data,
+        vpd_data,
+        co2_data,
+        ppfd_data,
+        fapar_data,
+        fapar_data_30_arcsec,
+    )
