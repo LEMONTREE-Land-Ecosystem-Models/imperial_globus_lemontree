@@ -69,11 +69,16 @@ def load_chelsa_data(path_format, year, latitude_bounds, longitude_bounds):
         dataset = dataset.rename_dims({"band": "time"})
         dataset = dataset.rename_vars({"band": "time"})
         dataset = dataset.assign_coords(time=[np.datetime64(f"{year}-{month:02d}")])
+
+        # Extract the variable into a data array and reduce to float32 to decrease
+        # memory footprint
         month_data.append(
-            dataset.sel(
+            dataset["band_data"]
+            .sel(
                 y=slice(*latitude_bounds),
                 x=slice(*longitude_bounds),
             )
+            .astype("float32")
         )
 
     # Concatenate the loaded datasets along the time dimension and return the result
@@ -113,7 +118,7 @@ for year in np.arange(1982, 2019):
     coords = temperature_data.coords
 
     # Now convert temperature to °C and reduce to numpy.
-    temperature_data = (temperature_data["band_data"].to_numpy() / 10) - 273.15
+    temperature_data = (temperature_data.to_numpy() / 10) - 273.15
 
     # Clip out temperatures below -25°C
     temperature_data = np.clip(temperature_data, a_min=-25.0, a_max=None)
@@ -129,7 +134,7 @@ for year in np.arange(1982, 2019):
     # Convert units - converting from (kg m-2 month-1 * 100) in file
     # - approximating 1kg m-2 = 1 litre m-2 = 1mm m-2
     # - also reduce to numpy.
-    precipitation_data = precipitation_data["band_data"].to_numpy() / 100
+    precipitation_data = precipitation_data.to_numpy() / 100
 
     # Cloud cover, converting from percentage to sunshine fraction as 1 - (clt /100) and
     # reduce to numpy.
@@ -140,7 +145,7 @@ for year in np.arange(1982, 2019):
         longitude_bounds=longitude_bounds,
     )
 
-    cloud_data = 1 - (cloud_data["band_data"].to_numpy() / 100)
+    cloud_data = 1 - (cloud_data.to_numpy() / 100)
 
     # For some reason, the downloaded CLT data is at a coarser resolution (~3km)
     cloud_data = np.kron(cloud_data, np.ones((1, 3, 3)))
@@ -186,11 +191,13 @@ for year in np.arange(1982, 2019):
 
     # Something odd happening with data shapes
     print(
-        f"\nTemperature: {temperature_data.shape}\n"
-        f"Precipitation: {precipitation_data.shape}\n"
-        f"Cloud: {cloud_data.shape}\n"
-        f"Elevation: {this_year_elevation.shape}\n"
-        f"Latitude: {latitude.shape}\n\n"
+        "\n"
+        f"Temperature: {temperature_data.shape} {temperature_data.dtype}\n"
+        f"Precipitation: {precipitation_data.shape} {precipitation_data.dtype}\n"
+        f"Cloud: {cloud_data.shape} {cloud_data.dtype}\n"
+        f"Elevation: {this_year_elevation.shape} {this_year_elevation.dtype}\n"
+        f"Latitude: {latitude.shape} {latitude.dtype}\n"
+        "\n"
     )
 
     # Load the data into the PModel environment and run the model
