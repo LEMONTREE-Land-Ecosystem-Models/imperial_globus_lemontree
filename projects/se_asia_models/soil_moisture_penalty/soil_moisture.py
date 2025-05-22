@@ -21,14 +21,14 @@ output_path = project_root / "projects/se_asia_models/soil_moisture_penalty/data
 # longitude_bounds = [92.0, 95.0]  # [92.0, 141.0] --> 3/49
 # latitude_bounds = [29.0, 27.0]  # [29.0, -11.0] --> 2/40
 #
-# PBS reported: Memory usage: 14443516kb
-#
+# PBS reported: Memory usage:
+# 6406900kb
 # Suggesting the usage with the full region is:
-# >>> (14443516 / (3*2)) * (49*40) / 1024**2
-# 4499.64 Gb !?
+# >>> (6406900 / (3*2)) * (49*40) / 1024**2
+# 1996 Gb !?
 
-longitude_bounds = [92.0, 95.0]  # [92.0, 141.0]
-latitude_bounds = [29.0, 27.0]  # [29.0, -11.0]
+longitude_bounds = [92.0, 141.0]
+latitude_bounds = [29.0, -11.0]
 
 # -------------------------------------------------------------------------------------
 # Data loading and subsetting
