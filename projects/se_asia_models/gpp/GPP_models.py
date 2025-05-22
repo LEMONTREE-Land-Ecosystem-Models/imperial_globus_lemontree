@@ -77,7 +77,7 @@ def load_chelsa_data(path_format, year, latitude_bounds, longitude_bounds):
             dataset.sel(
                 y=slice(*latitude_bounds),
                 x=slice(*longitude_bounds),
-            )
+            ).astype("float32")
         )
 
     # Concatenate the loaded datasets along the time dimension and return the result

@@ -151,7 +151,7 @@ for year in np.arange(1982, 2019):
     cloud_data = 1 - (cloud_data.to_numpy() / 100)
 
     # For some reason, the downloaded CLT data is at a coarser resolution (~3km)
-    cloud_data = np.kron(cloud_data, np.ones((1, 3, 3)))
+    cloud_data = np.kron(cloud_data, np.ones((1, 3, 3), dtype="float32"))
 
     # ---------------------------------------------------------------------------------
     # Extract required coordinate data
@@ -162,13 +162,13 @@ for year in np.arange(1982, 2019):
     start_next_year = (
         data_times[0].astype("datetime64[Y]") + np.timedelta64(1, "Y")
     ).astype("datetime64[D]")
-    days_per_month = np.diff(np.concat([data_times, [start_next_year]])).astype("int")
+    days_per_month = np.diff(np.concat([data_times, [start_next_year]])).astype("int32")
 
     # Get the sequence of dates in the year
     year_days = np.arange(data_times[0], start_next_year, 1)
 
     # Get the latitudes from the Y dimension
-    latitude = coords["y"].to_numpy()
+    latitude = coords["y"].to_numpy().astype("float32")
 
     # ---------------------------------------------------------------------------------
     # Converting monthly to daily observations
@@ -178,9 +178,12 @@ for year in np.arange(1982, 2019):
     temperature_data = np.repeat(temperature_data, days_per_month, axis=0)
     cloud_data = np.repeat(cloud_data, days_per_month, axis=0)
 
-    # For precipitation, need to reduce monthly mm to daily mm
+    # For precipitation, need to reduce monthly mm to daily mm. Explicitly type the days
+    # per month as float32 otherwise the float32 / integer promotes to float64,
     precipitation_data = np.repeat(
-        precipitation_data / days_per_month[:, None, None], days_per_month, axis=0
+        precipitation_data / days_per_month[:, None, None].astype("float32"),
+        days_per_month,
+        axis=0,
     )
 
     # ---------------------------------------------------------------------------------
