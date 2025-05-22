@@ -81,8 +81,11 @@ def load_chelsa_data(path_format, year, latitude_bounds, longitude_bounds):
             .astype("float32")
         )
 
-    # Concatenate the loaded datasets along the time dimension and return the result
-    return xarray.concat(month_data, dim="time")
+    # Concatenate the loaded datasets along the time dimension and return the result.
+    # Need to use join="override" here to avoid occassional problem where negligible
+    # differences in the floating point representation of the coordinates get
+    # interpreted as _different_ coordinates.
+    return xarray.concat(month_data, dim="time", join="override")
 
 
 # -------------------------------------------------------------------------------------
