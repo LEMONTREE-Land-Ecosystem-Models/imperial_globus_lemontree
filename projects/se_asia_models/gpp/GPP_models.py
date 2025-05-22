@@ -194,10 +194,13 @@ for year in np.arange(1982, 2019):
     pmodel = PModel(env=env)
 
     # Create a DataArray of the GPP using one of the CHELSA inputs as a template and
-    # then save the file as netCDF
+    # then save the file as netCDF using compressed float32
     predicted_gpp = vpd_data["band_data"].copy(data=pmodel.gpp)
     predicted_gpp.name = "PModel_GPP"
-    predicted_gpp.to_netcdf(output_path / f"data/se_asia_gpp_{year}.nc")
+    predicted_gpp.to_netcdf(
+        output_path / f"data/se_asia_gpp_{year}.nc",
+        encoding={"PModel_GPP": {"dtype": "float32", "zlib": True, "complevel": 6}},
+    )
 
     # Write out the environment and model summarize() outputs for simple checking
     with open(output_path / f"data/se_asia_gpp_{year}_summary.txt", "w") as f:

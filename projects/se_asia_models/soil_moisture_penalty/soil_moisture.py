@@ -139,14 +139,14 @@ for year in np.arange(1982, 2019):
     # ---------------------------------------------------------------------------------
 
     # Get the number of days in each month from the time dimension
-    time = coords["time"].to_numpy().astype("datetime64[D]")
-    start_next_year = (time[0].astype("datetime64[Y]") + np.timedelta64(1, "Y")).astype(
-        "datetime64[D]"
-    )
+    data_times = coords["time"].to_numpy().astype("datetime64[D]")
+    start_next_year = (
+        data_times[0].astype("datetime64[Y]") + np.timedelta64(1, "Y")
+    ).astype("datetime64[D]")
     days_per_month = np.diff(np.concat([time, [start_next_year]])).astype("int")
 
     # Get the sequence of dates in the year
-    year_days = np.arange(time[0], start_next_year, 1)
+    year_days = np.arange(data_times[0], start_next_year, 1)
 
     # Get the latitudes from the Y dimension
     latitude = coords["y"].to_numpy()
@@ -195,9 +195,11 @@ for year in np.arange(1982, 2019):
     wn_by_month = np.split(wn, np.cumsum(days_per_month)[:-1], axis=0)
     wn_month = np.array([np.nanmean(vals, axis=0) for vals in wn_by_month])
 
+    # Total annual PET and AET
     total_annual_aet = aet.sum(axis=0)
     total_annual_pet = splash.evap.pet_d.sum(axis=0)
 
+    # Create an xarray dataset
     calculated_data = xarray.Dataset(
         data_vars={
             "monthly_wn": (("time", "y", "x"), wn_month),
@@ -207,7 +209,16 @@ for year in np.arange(1982, 2019):
         coords=coords,
     )
 
-    calculated_data.to_netcdf(output_path / f"soil_moisture_{year}.nc")
+    # Write data out as compressed float32 values.
+    out_encoding = {"dtype": "float32", "zlib": True, "complevel": 6}
+    calculated_data.to_netcdf(
+        output_path / f"soil_moisture_{year}.nc",
+        encoding={
+            "monthly_wn": out_encoding,
+            "total_annual_aet": out_encoding,
+            "total_annual_pet": out_encoding,
+        },
+    )
 
     # Free up memory
     del (
