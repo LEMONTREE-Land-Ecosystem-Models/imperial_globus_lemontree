@@ -105,6 +105,9 @@ for year in np.arange(1982, 2019):
     # Now convert temperature to °C and reduce to numpy.
     temperature_data = (temperature_data["band_data"].to_numpy() / 10) - 273.15
 
+    # Clip out temperatures below -25°C
+    temperature_data = np.clip(temperature_data, a_min=-25.0, a_max=None)
+
     # Precipitation
     precipitation_data = load_chelsa_data(
         path_format="pr/CHELSA_pr_{month:02d}_{year}_V.2.1.tif",
