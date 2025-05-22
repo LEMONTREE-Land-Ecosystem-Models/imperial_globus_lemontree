@@ -1,4 +1,5 @@
 # This is a draft of the Python code for running the GPP models
+import gc
 import time
 from pathlib import Path
 
@@ -261,8 +262,13 @@ for year in np.arange(1982, 2019):
         temperature_data,
         cloud_data,
         precipitation_data,
+        this_year_elevation,
+        latitude,
+        splash,
         wn_by_month,
         wn_month,
         total_annual_aet,
         total_annual_pet,
+        calculated_data,
     )
+    gc.collect()  # This may not actually be needed :-)
