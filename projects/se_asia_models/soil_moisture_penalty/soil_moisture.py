@@ -1,6 +1,5 @@
 # This is a draft of the Python code for running the GPP models
-
-from contextlib import redirect_stdout
+import time
 from pathlib import Path
 
 import numpy as np
@@ -81,7 +80,7 @@ def load_chelsa_data(path_format, year, latitude_bounds, longitude_bounds):
 # -------------------------------------------------------------------------------------
 
 for year in np.arange(1982, 2019):
-    print(f"Processing {year}")
+    print(f"Processing {year}: {time.ctime()}")
 
     # Need to convert monthly data to daily data, so get the number of days per month
     # for the year
