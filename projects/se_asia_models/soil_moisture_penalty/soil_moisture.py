@@ -15,6 +15,17 @@ elev_path = project_root / "source/GMTED2010/mn30/mn30.tiff"
 output_path = project_root / "projects/se_asia_models/soil_moisture_penalty/data"
 
 # Set the bounds
+# The bounds were used to test memory usage. With the following bounds:
+#
+# longitude_bounds = [92.0, 95.0]  # [92.0, 141.0] --> 3/49
+# latitude_bounds = [29.0, 27.0]  # [29.0, -11.0] --> 2/40
+#
+# PBS reported: Memory usage: 14443516kb
+#
+# Suggesting the usage with the full region is:
+# >>> (14443516 / (3*2)) * (49*40) / 1024**2
+# 4499.64 Gb !?
+
 longitude_bounds = [92.0, 95.0]  # [92.0, 141.0]
 latitude_bounds = [29.0, 27.0]  # [29.0, -11.0]
 
@@ -143,7 +154,7 @@ for year in np.arange(1982, 2019):
     start_next_year = (
         data_times[0].astype("datetime64[Y]") + np.timedelta64(1, "Y")
     ).astype("datetime64[D]")
-    days_per_month = np.diff(np.concat([time, [start_next_year]])).astype("int")
+    days_per_month = np.diff(np.concat([data_times, [start_next_year]])).astype("int")
 
     # Get the sequence of dates in the year
     year_days = np.arange(data_times[0], start_next_year, 1)
