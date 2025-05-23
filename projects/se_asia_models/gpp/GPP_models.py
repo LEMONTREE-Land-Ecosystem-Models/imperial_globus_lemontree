@@ -19,8 +19,8 @@ fapar_path = project_root / "source/SNU_2024/annual_grids"
 output_path = project_root / "projects/se_asia_models/gpp/"
 
 # Set the bounds
-longitude_bounds = [92.0, 141.0]
-latitude_bounds = [29.0, -11.0]
+longitude_bounds = [92.0, 93.0]  # 141.0]
+latitude_bounds = [29.0, 28.0]  # -11.0]
 
 # -------------------------------------------------------------------------------------
 # Data loading and subsetting
@@ -44,6 +44,9 @@ patm_data = calc_patm(elevation_data)
 shape = list(patm_data["band_data"].shape)
 shape[0] = 12
 patm_data = np.broadcast_to(patm_data["band_data"], shape)
+
+# Finished with the elevation data
+del elevation_data
 
 # Load the CO2 and extract the 12 values for the year
 co2_data_full = pandas.read_csv(co2_path, comment="#")
@@ -119,6 +122,10 @@ for year in np.arange(1982, 2019):
         latitude_bounds=latitude_bounds,
         longitude_bounds=longitude_bounds,
     )
+
+    # Save the xarray coordinates
+    coords = temperature_data.coords
+
     temperature_data = np.clip(
         (temperature_data["band_data"].to_numpy() / 10) - 273.15,
         a_min=-25,
@@ -131,7 +138,7 @@ for year in np.arange(1982, 2019):
         year=year,
         latitude_bounds=latitude_bounds,
         longitude_bounds=longitude_bounds,
-    )
+    )["band_data"].to_numpy()
 
     # Load the RSDS data in MJ/m2/day. The raw data is integer and scaled by a factor of
     # 0.001, but the rasterio engine to xarray automatically applies any scale and
@@ -151,7 +158,8 @@ for year in np.arange(1982, 2019):
     # * divide by 24 * 60 * 60 to J/m2/s (max ~304)
     # * and then scale from J/m2/s (= W/m2) to µmol/m2/s (1W ~ 4.57 µmol m2 s1 and roughly
     #   44% is photosynthetically active radiation) so 4.57 * 0.44 ~ 2.04 (max ~621)
-    ppfd_data = (rsds_data * 1e6) / (24 * 60 * 60) * 2.04
+    ppfd_data = (rsds_data["band_data"] * 1e6) / (24 * 60 * 60) * 2.04
+    ppfd_data = ppfd_data.to_numpy()
 
     # ---------------------------------------------------------------------------------
     # Reconciling data dimensions
@@ -168,7 +176,7 @@ for year in np.arange(1982, 2019):
     # ---------------------------------------------------------------------------------
 
     # Broadcast CO2 time series to spatial dimensions
-    co2_data = np.broadcast_to(co2_data[:, None, None], ppfd_data["band_data"].shape)
+    co2_data = np.broadcast_to(co2_data[:, None, None], ppfd_data.shape)
 
     # Tile the fapar data to match resolution using the Kronecker function
     # NOTE: Could do something fancier than tiling here.
@@ -178,38 +186,76 @@ for year in np.arange(1982, 2019):
     fapar_data_30_arcsec = np.swapaxes(fapar_data_30_arcsec, 1, 2)
 
     # ---------------------------------------------------------------------------------
-    # Fit the model
+    # Fit the GPP models
     # ---------------------------------------------------------------------------------
+    summary_path = output_path / f"data/1se_asia_gpp_{year}_summary.txt"
 
-    # Load the data into the PModel environment and run the model
+    # Potential GPP
     env = PModelEnvironment(
         tc=temperature_data,
-        vpd=vpd_data["band_data"].to_numpy(),
+        vpd=vpd_data,
         patm=patm_data,
         co2=co2_data,
-        ppfd=ppfd_data["band_data"].to_numpy(),
-        fapar=fapar_data_30_arcsec,
+        ppfd=ppfd_data,
+        fapar=1,
     )
 
     pmodel = PModel(env=env)
-
-    # Create a DataArray of the GPP using one of the CHELSA inputs as a template and
-    # then save the file as netCDF using compressed float32
-    predicted_gpp = vpd_data["band_data"].copy(data=pmodel.gpp)
-    predicted_gpp.name = "PModel_GPP"
-    predicted_gpp.to_netcdf(
-        output_path / f"data/se_asia_gpp_{year}.nc",
-        encoding={"PModel_GPP": {"dtype": "float32", "zlib": True, "complevel": 6}},
-    )
+    potential_gpp = pmodel.gpp
 
     # Write out the environment and model summarize() outputs for simple checking
-    with open(output_path / f"data/se_asia_gpp_{year}_summary.txt", "w") as f:
+    with open(summary_path, "w") as f:
         with redirect_stdout(f):
-            print(f"P Model and environment summaries for {year}\n")
+            print(f"Potential GPP: P Model and environment summaries for {year}\n\n")
             env.summarize()
+            print("\n")
             pmodel.summarize()
+            print("\n")
 
-    # Try and free up memory
+    # BRC model settings for Stocker soil moisture
+    env = PModelEnvironment(
+        tc=temperature_data,
+        vpd=vpd_data,
+        patm=patm_data,
+        co2=co2_data,
+        ppfd=ppfd_data,
+        fapar=fapar_data_30_arcsec,
+    )
+
+    pmodel = PModel(
+        env=env,
+        reference_kphio=0.081785,
+    )
+    brc_model_gpp = pmodel.gpp
+
+    # Append out the environment and model summarize() outputs for simple checking
+    with open(summary_path, "wa") as f:
+        with redirect_stdout(f):
+            print(f"Stocker BRC GPP: P Model and environment summaries for {year}\n\n")
+            env.summarize()
+            print("\n")
+            pmodel.summarize()
+            print("\n")
+
+    # Create a dataset of the GPP values
+    gpp_data = xarray.Dataset(
+        data_vars={
+            "potential_gpp": (("time", "y", "x"), potential_gpp),
+            "brc_model_gpp": (("time", "y", "x"), brc_model_gpp),
+        },
+        coords=coords,
+    )
+
+    # Save the file as netCDF using compressed float32
+    gpp_data.to_netcdf(
+        output_path / f"data/1se_asia_gpp_{year}.nc",
+        encoding={
+            "potential_gpp": {"dtype": "float32", "zlib": True, "complevel": 6},
+            "brc_model_gpp": {"dtype": "float32", "zlib": True, "complevel": 6},
+        },
+    )
+
+    # Free up memory
     del (
         env,
         pmodel,
