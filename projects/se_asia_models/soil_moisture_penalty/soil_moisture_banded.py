@@ -37,6 +37,8 @@ this_pair = lat_pairs[array_index]
 longitude_bounds = [92.0, 141.0]
 latitude_bounds = [float(this_pair[0]), float(this_pair[1])]
 
+print(f"Processing latitude bounds: {latitude_bounds}")
+
 # -------------------------------------------------------------------------------------
 # Data loading and subsetting
 # - Load the constant data (elevation/patm) and the full CO2 time series

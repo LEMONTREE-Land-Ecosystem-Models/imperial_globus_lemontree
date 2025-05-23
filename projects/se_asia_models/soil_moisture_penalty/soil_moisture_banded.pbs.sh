@@ -11,11 +11,11 @@
 # The lines below are the PBS directives. They specify the resources required for the
 # job. 
 
-#PBS -lselect=1:ncpus=1:mem=124gb
+#PBS -lselect=1:ncpus=1:mem=128gb
 #PBS -lwalltime=24:00:00
 #PBS -J 0-19
 #PBS -j oe
-#PBS -o /rds/general/project/lemontree/live/projects/se_asia_models/soil_moisture_penalty/soil_moisture.out
+#PBS -o /rds/general/project/lemontree/live/projects/se_asia_models/soil_moisture_penalty/soil_moisture_banded_^array_index^.out
 
 # Activate the conda environment
 eval "$(~/miniforge3/bin/conda shell.bash hook)"
@@ -27,7 +27,7 @@ echo -e "In PBS.SH and running"
 date
 
 # Run the GPP script
-python /rds/general/project/lemontree/live/projects/se_asia_models/soil_moisture_penalty/soil_moisture.py
+python /rds/general/project/lemontree/live/projects/se_asia_models/soil_moisture_penalty/soil_moisture_banded.py
 
 # Echo the end time and deactivate the conda environment
 date
