@@ -8,7 +8,8 @@ Imperial HPC containing the required packages for running the modelling.
 
 ## GPP Models
 
-The `gpp` directory contains predications of GPP using `pyrealm` and the following forcing variables:
+The `gpp` directory contains predications of GPP using `pyrealm` and the following
+forcing variables:
 
 * Temperature: CHELSA `tas` converted from Kelvins/10
 * VPD: CHELSA `vpd` data provided as Pascals.
@@ -89,4 +90,39 @@ moisture therefore runs subsets of 2° latitudinal bands.
   creates an array job running the 20 x 2° bands.
 * the files `soil_moisture_penalty/compile_banded_data.py` and
   `soil_moisture_penalty/compile_banded_data.pbs.sh` provides a simple PBS job to
-  compile the 20 x 2° band outputs into single annual files for the whole region.
+  compile the 20 x 2° band outputs into single annual files for the whole region. The
+  results are saved as `soil_moisture_1982.nc` with the following structure:
+
+```text
+<xarray.Dataset> Size: 2GB
+Dimensions:           (time: 12, y: 4800, x: 5880)
+Coordinates:
+  * x                 (x) float64 47kB 92.0 92.01 92.02 ... 141.0 141.0 141.0
+  * y                 (y) float64 38kB 29.0 28.99 28.98 ... -10.98 -10.99 -11.0
+    spatial_ref       int64 8B ...
+  * time              (time) datetime64[ns] 96B 1985-01-01 ... 1985-12-01
+Data variables:
+    monthly_wn        (time, y, x) float32 1GB 15.7 15.83 15.99 ... 51.42 51.39
+    total_annual_aet  (y, x) float32 113MB ...
+    total_annual_pet  (y, x) float32 113MB ...
+```
+
+* the files `soil_moisture_penalty/calculate_stocker_penalty.py` and
+  `soil_moisture_penalty/calculate_stocker_penalty.pbs.sh` provides a PBS job to
+  calculate the aridity index as AET / PET across all years and then calculate monthly
+  values for the Stocker soil moisture penalty using `monthly_wn / 150` as the estimate
+  of soil moisture content. The results are saved as files `stocker_penalty_1982.nc`
+  with the following structure:
+
+```text
+Out[83]: 
+<xarray.Dataset> Size: 1GB
+Dimensions:          (time: 12, y: 4800, x: 5880)
+Coordinates:
+  * x                (x) float64 47kB 92.0 92.01 92.02 ... 141.0 141.0 141.0
+  * y                (y) float64 38kB 29.0 28.99 28.98 ... -10.98 -10.99 -11.0
+    spatial_ref      int64 8B ...
+  * time             (time) datetime64[ns] 96B 1985-01-01 ... 1985-12-01
+Data variables:
+    stocker_penalty  (time, y, x) float32 1GB 0.6217 0.6258 ... 0.8956 0.8953
+```
