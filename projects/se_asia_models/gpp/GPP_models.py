@@ -19,8 +19,8 @@ fapar_path = project_root / "source/SNU_2024/annual_grids"
 output_path = project_root / "projects/se_asia_models/gpp/"
 
 # Set the bounds
-longitude_bounds = [92.0, 93.0]  # 141.0]
-latitude_bounds = [29.0, 28.0]  # -11.0]
+longitude_bounds = [92.0, 141.0]
+latitude_bounds = [29.0, -11.0]
 
 # -------------------------------------------------------------------------------------
 # Data loading and subsetting
@@ -229,7 +229,7 @@ for year in np.arange(1982, 2019):
     brc_model_gpp = pmodel.gpp
 
     # Append out the environment and model summarize() outputs for simple checking
-    with open(summary_path, "wa") as f:
+    with open(summary_path, "a") as f:
         with redirect_stdout(f):
             print(f"Stocker BRC GPP: P Model and environment summaries for {year}\n\n")
             env.summarize()
