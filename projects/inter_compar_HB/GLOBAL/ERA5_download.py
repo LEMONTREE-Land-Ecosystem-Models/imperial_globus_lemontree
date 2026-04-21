@@ -15,18 +15,13 @@ year chunks. The year chunk size of 4 is chosen as it shows green on the CDS req
 website and reduces the total number of jobs and files.
 """
 
-# Set output root on the ephemeral directory.
-dir_root = Path("/rds/general/project/lemontree/ephemeral/ERA5")
-
-# Make the download directory
-if not os.path.exists(dir_root):
-    os.makedirs(dir_root)
-
+# Create an output directory on the ephemeral directory.
+output_dir = Path("/rds/general/project/lemontree/ephemeral/ERA5")
+output_dir.mkdir(exist_ok=True)
 
 # Requires CDS conditions to be accepted online and then needs to find a $HOME/.cdsapirc
 # with a valid key
 c = cdsapi.Client()
-
 
 variables = [
     "10m_u_component_of_wind",
@@ -82,7 +77,7 @@ while True:
 
             # Generate the task and add it to the task list, setting the download file
             # path using the variable name and first year
-            output_path = dir_root / f"{new_request_var}_{new_request_years[0]}.grib"
+            output_path = output_dir / f"{new_request_var}_{new_request_years[0]}.grib"
             task = client.retrieve(dataset=dataset, request=request, target=output_path)
 
             # Add the task to the task list
