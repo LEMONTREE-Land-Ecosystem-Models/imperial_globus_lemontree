@@ -1,7 +1,6 @@
-import os
 from itertools import product
 from pathlib import Path
-import time
+from time import gmtime, strftime
 import cdsapi
 
 """
@@ -11,13 +10,13 @@ This script downloads ERA5 data from CDS using the CDS API. The script expects t
 .cdsapi file giving CDS credentials in the users home directory.
 
 The script maintains two active tasks and iterates through permutations of variable and
-year chunks. The year chunk size of 4 is chosen as it shows green on the CDS request
-website and reduces the total number of jobs and files.
+year month chunks.
 """
 
 # Create an output directory on the ephemeral directory.
 output_dir = Path("/rds/general/project/lemontree/ephemeral/ERA5")
 output_dir.mkdir(exist_ok=True)
+progress_file = open(output_dir / "progress.log", "w")
 
 # Requires CDS conditions to be accepted online and then needs to find a $HOME/.cdsapirc
 # with a valid key
@@ -37,12 +36,11 @@ variables = [
 ]
 
 # Grab variables in chunks of 4 years
-years = list(range(1980, 2026))
-n_per_chunk = 4
-year_chunks = [years[i : i + n_per_chunk] for i in range(0, len(years), n_per_chunk)]
+years = [str(y) for y in range(1980, 2026)]
+months = [f"{m:02}" for m in range(1, 13)]
 
-# Create a generator yielding paired variable and year chunk tuples
-data_subsets = product(variables, year_chunks)
+# Create a generator yielding (variable, year, month) tuples
+data_subsets = product(variables, years, months)
 
 # Define a CDSAPI request requesting all hourly observations for a given variable within
 # a range of years
@@ -51,62 +49,37 @@ request_template = {
     "product_type": ["reanalysis"],
     "variable": None,
     "year": None,
-    "month": [f"{m:02}" for m in range(1, 13)],
+    "month": None,
     "day": [f"{d:02}" for d in range(1, 32)],
     "time": [f"{h:02}:00" for h in range(0, 24)],
     "data_format": "grib",
     "download_format": "unarchived",
 }
 
-# Launch the client in a mode that allows multiple requests
-client = cdsapi.Client(wait_until_complete=False)
+# Launch client - this is running in wait until complete mode, so will download to the
+# output path and then continue to the next file.
+client = cdsapi.Client()
 
-# Task list
-tasks_list = []
 
-while True:
-    # Create requests and add to task list
-    if len(tasks_list) < 2:
-        try:
-            # Get a new data subset from the generator and build the new request
-            # dictionary
-            new_request_var, new_request_years = next(data_subsets)
-            request = request_template.copy()
-            request["variable"] = [new_request_var]
-            request["year"] = new_request_years
+for var, year, month in data_subsets:
+    # Log progress
+    progress_file.write(
+        f"{strftime('%Y-%m-%d %H:%M:%S', gmtime())}: {var} {year} {month}\n"
+    )
 
-            # Generate the task and add it to the task list, setting the download file
-            # path using the variable name and first year
-            output_path = output_dir / f"{new_request_var}_{new_request_years[0]}.grib"
-            task = client.retrieve(name=dataset, request=request, target=output_path)
+    # Get a new data subset from the generator and build the new request
+    # dictionary
+    var, year, month = next(data_subsets)
+    request = request_template.copy()
+    request["variable"] = [var]
+    request["year"] = [year]
+    request["month"] = [month]
 
-            # Add the task to the task list
-            tasks_list.append(task)
-        except StopIteration:
-            pass
+    # Check a variable directory exists
+    var_dir = output_dir / var
+    var_dir.mkdir(exist_ok=True)
 
-    # Monitor the tasks
-    for task in tasks_list:
-        task.update()
-        reply = task.reply
-        task.info("Request ID: %s, state: %s" % (reply["request_id"], reply["state"]))
-
-        # Remove failed tasks from the list
-        if reply["state"] == "failed":
-            task.error("Message: %s", reply["error"].get("message"))
-            task.error("Reason:  %s", reply["error"].get("reason"))
-            for n in (
-                reply.get("error", {})
-                .get("context", {})
-                .get("traceback", "")
-                .split("\n")
-            ):
-                if n.strip() == "":
-                    break
-                task.error("  %s", n)
-            tasks_list.remove(task)
-
-        if reply["state"] == "completed":
-            tasks_list.remove(task)
-
-    time.sleep(30)
+    # Run the task
+    task = client.retrieve(
+        name=dataset, request=request, target=var_dir / f"{var}_{year}_{month}.grib"
+    )
