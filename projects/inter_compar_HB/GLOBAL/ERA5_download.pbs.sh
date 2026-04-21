@@ -13,6 +13,6 @@ eval "$(~/miniforge3/bin/conda shell.bash hook)"
 # Activate a conda environment, which needs cdsapi:
 # pip install cdsapi
 
-python /rds/general/project/lemontree/live/projects/inter_compar_HB/GLOBAL/ERA5_download.py
+python /rds/general/project/lemontree/live/projects/inter_compar_HB/GLOBAL/ERA5_download_cdsswarm.py
 
 conda deactivate
