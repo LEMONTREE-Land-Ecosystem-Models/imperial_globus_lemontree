@@ -1,8 +1,6 @@
 from itertools import product
 from pathlib import Path
-from time import gmtime, strftime
 
-import cdsapi
 import cdsswarm
 
 """
@@ -11,8 +9,9 @@ import cdsswarm
 This script downloads ERA5 data from CDS using the CDS API. The script expects to find a
 .cdsapi file giving CDS credentials in the users home directory.
 
-The script maintains two active tasks and iterates through permutations of variable and
-year month chunks.
+The script uses the cdsswarm package to manage the download task list efficiently. It
+uses a limited number of workers to submit monthly tasks, and allows the submission,
+acceptance and running of tasks to continue alongside data download.
 """
 
 # Create an output directory on the ephemeral directory.
