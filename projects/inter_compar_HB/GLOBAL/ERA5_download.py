@@ -66,10 +66,9 @@ for var, year, month in data_subsets:
     progress_file.write(
         f"{strftime('%Y-%m-%d %H:%M:%S', gmtime())}: {var} {year} {month}\n"
     )
+    progress_file.flush()
 
-    # Get a new data subset from the generator and build the new request
-    # dictionary
-    var, year, month = next(data_subsets)
+    # Get a new data subset from the generator and build the new request dictionary
     request = request_template.copy()
     request["variable"] = [var]
     request["year"] = [year]
