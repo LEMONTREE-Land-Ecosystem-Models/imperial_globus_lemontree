@@ -78,7 +78,7 @@ while True:
             # Generate the task and add it to the task list, setting the download file
             # path using the variable name and first year
             output_path = output_dir / f"{new_request_var}_{new_request_years[0]}.grib"
-            task = client.retrieve(dataset=dataset, request=request, target=output_path)
+            task = client.retrieve(name=dataset, request=request, target=output_path)
 
             # Add the task to the task list
             tasks_list.append(task)
