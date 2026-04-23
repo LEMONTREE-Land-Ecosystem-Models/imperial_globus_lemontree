@@ -103,8 +103,8 @@ for (long_name, var), year, month in data_subsets:
     )
 
     # Define the subset for the variable and the current month
-    month = f"{year}-{month:02}"
-    subset = ds[var].sel(time=month)
+    month_selector = f"{year}-{month:02}"
+    subset = ds[var].sel(time=month_selector)
 
     # Check a variable directory exists
     var_dir = output_dir / var
