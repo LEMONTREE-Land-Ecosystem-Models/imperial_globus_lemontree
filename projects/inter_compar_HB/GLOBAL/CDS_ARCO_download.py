@@ -15,6 +15,9 @@ from zarr.storage import ObjectStore
 This script downloads ERA5 data from CDS via the new ARCO bulk download API. The script
 expects to find a .cdsapi file giving CDS credentials in the users home directory.
 
+The script needs to be run in Python 3.13+ environment that provides:
+
+pip install "xarray[io]" zarr httpio fsspec ipython obstore
 """
 
 # Create an output directory on the ephemeral directory.
@@ -23,7 +26,8 @@ output_dir.mkdir(exist_ok=True)
 progress_file = open(output_dir / "progress.log", "w")
 
 
-# Get the cdsapi key from the RC file in the user home directory
+# Get the cdsapi key from the RC file in the user home directory.
+# NOTE: This requires Python 3.13+ for the allow_unnamed_section argument
 cdsapirc_path = Path("~/.cdsapirc").expanduser()
 cfg = configparser.ConfigParser(allow_unnamed_section=True)
 
@@ -71,10 +75,8 @@ variables = [
 years = range(1980, 1981)
 months = range(1, 13)
 
-
 # Use the time-chunked data for fast access across spatial dimensions
 timechunked_url = "https://arco.datastores.ecmwf.int/cadl-arco-time-002/arco/reanalysis_era5_single_levels/sfc/timeChunked.zarr"
-
 
 # Use obstore's HTTPStore to create a store with retry configuration,
 # and then wrap it in a zarr ObjectStore to read with xarray.
@@ -90,7 +92,6 @@ http_store = HTTPStore(
 store = ObjectStore(http_store, read_only=True)
 ds = xr.open_zarr(store)
 
-
 # Create a generator yielding (variable, year, month) tuples
 data_subsets = product(variables, years, months)
 
@@ -98,7 +99,7 @@ for (long_name, var), year, month in data_subsets:
     # Log the start of the subset
     progress_file.write(
         f"{datetime.now().isoformat(timespec='seconds')}, "
-        f"{var}, {year}, {month}, , started"
+        f"{var}, {year}, {month}, , started\n"
     )
 
     # Define the subset for the variable and the current month
@@ -114,5 +115,7 @@ for (long_name, var), year, month in data_subsets:
     # Log the download completion
     progress_file.write(
         f"{datetime.now().isoformat(timespec='seconds')}, "
-        f"{var}, {year}, {month}, {round(subset.nbytes / 1024**3, 2)}, completed"
+        f"{var}, {year}, {month}, {round(subset.nbytes / 1024**3, 2)}, completed\n"
     )
+
+    progress_file.flush()

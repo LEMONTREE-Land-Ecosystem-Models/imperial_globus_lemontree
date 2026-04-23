@@ -10,9 +10,17 @@
 
 eval "$(~/miniforge3/bin/conda shell.bash hook)"
 
-# Activate a conda environment, which needs cdsapi:
-# pip install cdsapi
+# Activate a conda environment python314_xarray, which needs:
+# xarray[io] 
+# zarr
+# httpio
+# fsspec
+# ipython
+# obstore
 
-python /rds/general/project/lemontree/live/projects/inter_compar_HB/GLOBAL/ERA5_download_cdsswarm.py
+conda activate python314_xarray
 
-conda deactivate
+python /rds/general/project/lemontree/live/projects/inter_compar_HB/GLOBAL/CDS_ARCO_download.py
+
+conda deactivate # Out of python314_xarray
+conda deactivate # Out of base

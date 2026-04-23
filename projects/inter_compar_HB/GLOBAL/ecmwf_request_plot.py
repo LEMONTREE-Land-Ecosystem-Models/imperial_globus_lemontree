@@ -21,7 +21,7 @@ data["processing_seconds"] = (
 )
 
 # Plot runtime and processing time as a function of submission time
-fig, (ax1, ax2) = plt.subplots(nrows=2, sharex=True)
+fig, (ax1, ax2) = plt.subplots(nrows=2, sharex=True, figsize=(6, 8))
 
 
 ax1.scatter(data["created_at"], data["runtime_minutes"])
@@ -37,4 +37,4 @@ time_axis_format = DateFormatter("%H:%m")
 ax2.xaxis.set_major_formatter(time_axis_format)
 
 plt.tight_layout()
-plt.show()
+plt.savefig("CDS_processing_time.png")
