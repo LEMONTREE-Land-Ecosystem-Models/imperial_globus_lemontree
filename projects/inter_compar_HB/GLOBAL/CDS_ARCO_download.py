@@ -97,10 +97,7 @@ data_subsets = product(variables, years, months)
 
 for (long_name, var), year, month in data_subsets:
     # Log the start of the subset
-    progress_file.write(
-        f"{datetime.now().isoformat(timespec='seconds')}, "
-        f"{var}, {year}, {month}, , started\n"
-    )
+    start_time = datetime.now().isoformat(timespec="seconds")
 
     # Define the subset for the variable and the current month
     month_selector = f"{year}-{month:02}"
@@ -114,8 +111,8 @@ for (long_name, var), year, month in data_subsets:
 
     # Log the download completion
     progress_file.write(
-        f"{datetime.now().isoformat(timespec='seconds')}, "
-        f"{var}, {year}, {month}, {round(subset.nbytes / 1024**3, 2)}, completed\n"
+        f"{start_time}, {datetime.now().isoformat(timespec='seconds')}, "
+        f"{var}, {year}, {month}, {round(subset.nbytes / 1024**3, 2)}\n"
     )
 
     progress_file.flush()
