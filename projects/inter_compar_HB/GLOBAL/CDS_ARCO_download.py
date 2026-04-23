@@ -23,7 +23,7 @@ pip install "xarray[io]" zarr httpio fsspec ipython obstore
 # Create an output directory on the ephemeral directory.
 output_dir = Path("/rds/general/project/lemontree/ephemeral/ERA5_ARCO")
 output_dir.mkdir(exist_ok=True)
-progress_file = open(output_dir / "progress.log", "w")
+progress_file = open(output_dir / "progress.log", "wa")
 
 
 # Get the cdsapi key from the RC file in the user home directory.
@@ -69,7 +69,7 @@ variables = [
     # ("maximum_2m_temperature_since_previous_post_processing", "??"),
     # ("minimum_2m_temperature_since_previous_post_processing", "??"),
     ("surface_solar_radiation_downwards", "ssrd"),
-    ("surface_thermal_radiation_downwards", "sstd"),
+    ("surface_thermal_radiation_downwards", "strd"),
 ]
 
 years = range(1980, 1981)
