@@ -14,12 +14,7 @@
 eval "$(~/miniforge3/bin/conda shell.bash hook)"
 
 # Activate a conda environment python314_xarray, which needs:
-# xarray[io] 
-# zarr
-# httpio
-# fsspec
-# ipython
-# obstore
+# cdsswwarm
 
 conda activate python314_xarray
 
