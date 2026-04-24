@@ -23,7 +23,7 @@ pip install "xarray[io]" zarr httpio fsspec ipython obstore
 # Create an output directory on the ephemeral directory.
 output_dir = Path("/rds/general/project/lemontree/ephemeral/ERA5_ARCO")
 output_dir.mkdir(exist_ok=True)
-progress_file = open(output_dir / "progress.log", "wa")
+progress_file = open(output_dir / "progress.log", "a")
 
 
 # Get the cdsapi key from the RC file in the user home directory.
@@ -96,16 +96,21 @@ ds = xr.open_zarr(store)
 data_subsets = product(variables, years, months)
 
 for (long_name, var), year, month in data_subsets:
+    # Check a variable directory exists
+    var_dir = output_dir / var
+    var_dir.mkdir(exist_ok=True)
+
+    # Get the output file name and skip over existing files
+    outfile_name = var_dir / f"{var}_{year}_{month:02}.nc"
+    if outfile_name.exists():
+        continue
+
     # Log the start of the subset
     start_time = datetime.now().isoformat(timespec="seconds")
 
     # Define the subset for the variable and the current month
     month_selector = f"{year}-{month:02}"
     subset = ds[var].sel(time=month_selector)
-
-    # Check a variable directory exists
-    var_dir = output_dir / var
-    var_dir.mkdir(exist_ok=True)
 
     subset.to_netcdf(var_dir / f"{var}_{year}_{month:02}.nc")
 
