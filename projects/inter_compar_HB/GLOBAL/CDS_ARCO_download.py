@@ -72,7 +72,7 @@ variables = [
     ("surface_thermal_radiation_downwards", "strd"),
 ]
 
-years = range(1980, 1981)
+years = range(1980, 2026)
 months = range(1, 13)
 
 # Use the time-chunked data for fast access across spatial dimensions
@@ -103,6 +103,7 @@ for (long_name, var), year, month in data_subsets:
     # Get the output file name and skip over existing files
     outfile_name = var_dir / f"{var}_{year}_{month:02}.nc"
     if outfile_name.exists():
+        print(f"skipping {outfile_name}")
         continue
 
     # Log the start of the subset
