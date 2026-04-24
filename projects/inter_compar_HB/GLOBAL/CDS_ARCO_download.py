@@ -113,7 +113,7 @@ for (long_name, var), year, month in data_subsets:
     month_selector = f"{year}-{month:02}"
     subset = ds[var].sel(time=month_selector)
 
-    subset.to_netcdf(var_dir / f"{var}_{year}_{month:02}.nc")
+    subset.to_netcdf(outfile_name)
 
     # Log the download completion
     progress_file.write(
