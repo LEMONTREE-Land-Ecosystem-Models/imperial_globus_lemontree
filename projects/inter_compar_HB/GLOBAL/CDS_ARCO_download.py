@@ -60,14 +60,12 @@ cdsapi_key = cfg.get(configparser.UNNAMED_SECTION, "key")
 # ]
 
 variables = [
-    ("10m_u_component_of_wind", "u10"),
-    ("10m_v_component_of_wind", "v10"),
-    ("2m_dewpoint_temperature", "d2m"),
-    ("2m_temperature", "t2m"),
-    ("surface_pressure", "sp"),
-    ("total_precipitation", "tp"),
-    # ("maximum_2m_temperature_since_previous_post_processing", "??"),
-    # ("minimum_2m_temperature_since_previous_post_processing", "??"),
+    # ("10m_u_component_of_wind", "u10"),
+    # ("10m_v_component_of_wind", "v10"),
+    # ("2m_dewpoint_temperature", "d2m"),
+    # ("2m_temperature", "t2m"),
+    # ("surface_pressure", "sp"),
+    # ("total_precipitation", "tp"),
     ("surface_solar_radiation_downwards", "ssrd"),
     ("surface_thermal_radiation_downwards", "strd"),
 ]

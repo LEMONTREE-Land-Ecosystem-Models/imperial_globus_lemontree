@@ -1,3 +1,8 @@
+"""This python script was used to retrieve CDSAPI request handling times in order to 
+diagnose download handling issues.
+"""
+
+
 from ecmwf.datastores import Client
 import pandas as pd
 

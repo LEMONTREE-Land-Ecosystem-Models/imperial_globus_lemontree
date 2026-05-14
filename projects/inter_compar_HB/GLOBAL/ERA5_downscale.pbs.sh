@@ -13,7 +13,11 @@
 
 module load CDO
 
-# Select a variable to convert based on the array index
+# Select a variable to convert based on the array index - the PBS settings above iterate
+# over the first six variables since these were complete when the script was first run.
+# Re-submitting the script with -J 6-9 would then target the remaining variables once
+# complete.
+
 VARIABLES=("u10" "v10" "d2m" "t2m" "sp" "tp" "ssrd" "strd" "tmin" "tmax")
 THIS_VAR=${VARIABLES[$PBS_ARRAY_INDEX]}
 
