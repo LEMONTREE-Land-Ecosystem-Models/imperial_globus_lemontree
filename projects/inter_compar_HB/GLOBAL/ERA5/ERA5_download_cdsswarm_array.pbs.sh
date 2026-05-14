@@ -9,7 +9,7 @@
 #PBS -lwalltime=24:00:00
 #PBS -j oe
 #PBS -J 1-4
-#PBS -o /rds/general/project/lemontree/live/projects/inter_compar_HB/GLOBAL/ERA5_download_array_^array_index^.out
+#PBS -o /rds/general/project/lemontree/live/projects/inter_compar_HB/GLOBAL/ERA5/ERA5_download_array_^array_index^.out
 
 eval "$(~/miniforge3/bin/conda shell.bash hook)"
 
@@ -18,7 +18,7 @@ eval "$(~/miniforge3/bin/conda shell.bash hook)"
 
 conda activate python314_xarray
 
-python /rds/general/project/lemontree/live/projects/inter_compar_HB/GLOBAL/ERA5_download_cdsswarm_array.py
+python /rds/general/project/lemontree/live/projects/inter_compar_HB/GLOBAL/ERA5/ERA5_download_cdsswarm_array.py
 
 conda deactivate # Out of python314_xarray
 conda deactivate # Out of base
