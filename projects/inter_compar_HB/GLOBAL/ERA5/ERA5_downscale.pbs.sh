@@ -2,7 +2,9 @@
 
 # This script downscales the original ERA5 single level 0.25° resolution data to the
 # required 0.5° resolution data. It runs as an array job to parallelise conversion of
-# different variables.
+# different variables. This job handles the eight variables downloaded through the ARCO
+# API - the remaining two variables need to be downloaded as GRIB using CDSAPI and then
+# converted to NetCDF before resampling.
 
 # Use the throughput class - single node, single cpu
 #PBS -lselect=1:ncpus=1:mem=96gb
@@ -18,7 +20,7 @@ module load CDO
 # Re-submitting the script with -J 6-9 would then target the remaining variables once
 # complete.
 
-VARIABLES=("u10" "v10" "d2m" "t2m" "sp" "tp" "ssrd" "strd" "tmin" "tmax")
+VARIABLES=("u10" "v10" "d2m" "t2m" "sp" "tp" "ssrd" "strd")
 THIS_VAR=${VARIABLES[$PBS_ARRAY_INDEX]}
 
 # Setup the source and destination directories
@@ -29,8 +31,13 @@ DEST_DIR="/rds/general/project/lemontree/live/projects/inter_compar_HB/GLOBAL/ER
 mkdir -p $DEST_DIR/$THIS_VAR
 
 # Iterate over the source directory contents, converting to mildly compressed NetCDF at
-# 0.5° resolution
+# 0.5° resolution. We are using remapbil to generate bilinear estimates of the cell
+# centres of a regular 0.5° lat/lon grid.
+
 for file in $SRC_DIR/* ; 
     do echo $file; 
-    cdo -z zip_6 gridboxmean,2,2 $file $DEST_DIR/$THIS_VAR/$(basename $file)
+    cdo -z zip_6  \
+        remapbil,/rds/general/projects/lemontree/live/projects/inter_compar_HB/GLOBAL/ERA5/ERA5_grid_half_degree.txt \
+        $file \
+        $DEST_DIR/$THIS_VAR/$(basename $file) 
 done

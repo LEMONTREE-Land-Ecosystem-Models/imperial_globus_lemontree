@@ -14,6 +14,25 @@ array, setting a per job CDSAPI key.
 The script uses the cdsswarm package to manage the download task list efficiently. It
 uses a limited number of workers to submit monthly tasks, and allows the submission,
 acceptance and running of tasks to continue alongside data download.
+
+It is expecting to be able to access a TOML file in the home directory of the submitting
+user that contains CDSAPI keys to be used with the different array jobs. This allows the
+download to be shared across different researchers working within the project. One
+download worker is created for each key - currently four are coded into this script.
+
+```
+key = [
+  "d6b...",
+  "0d2...",
+  "29f...",
+  "311...",
+]
+url = "https://cds.climate.copernicus.eu/api"
+```
+
+Note that this is technically a bit dubious with the T&Cs of the CDSAPI but we're not
+using sock puppets, it's more like synchronising usage across the users to make sure
+data is downloaded consistently. 
 """
 
 # Get job array index
@@ -29,20 +48,20 @@ os.environ["CDSAPI_KEY"] = cdsapi_info["key"][job_index - 1]
 # Set the variable and year range for the jobs
 job_subsets = (
     (
-        "maximum_2m_temperature_since_previous_post_processing",
-        range(1980, 1981),  # range(1980, 2003),
-    ),
-    (
-        "maximum_2m_temperature_since_previous_post_processing",
-        range(2003, 2004),  # range(2003, 2026),
-    ),
-    (
         "minimum_2m_temperature_since_previous_post_processing",
         range(1980, 1981),  # range(1980, 2003),
     ),
     (
         "minimum_2m_temperature_since_previous_post_processing",
         range(2003, 2004),  # range(2003, 2026),
+    ),
+    (
+        "maximum_2m_temperature_since_previous_post_processing",
+        range(1980, 2003),
+    ),
+    (
+        "maximum_2m_temperature_since_previous_post_processing",
+        range(2003, 2026),
     ),
 )
 

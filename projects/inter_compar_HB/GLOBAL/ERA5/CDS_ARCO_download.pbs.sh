@@ -6,7 +6,7 @@
 #PBS -lselect=1:ncpus=1:mem=96gb
 #PBS -lwalltime=24:00:00
 #PBS -j oe
-#PBS -o /rds/general/project/lemontree/live/projects/inter_compar_HB/GLOBAL/ERA5/ERA5_download.out
+#PBS -o /rds/general/project/lemontree/live/projects/inter_compar_HB/GLOBAL/ERA5/CDS_ARCO_download.out
 
 eval "$(~/miniforge3/bin/conda shell.bash hook)"
 
