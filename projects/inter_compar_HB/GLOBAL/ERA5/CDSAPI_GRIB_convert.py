@@ -1,11 +1,13 @@
 """Simple conversion tool using ECMWF earthkit.data to convert CDS GRIB to NetCDF."""
 
 import sys
+import os
+from pathlib import Path
 
 import earthkit.data as ekd
 
 
-def convert_GRIB_to_NetCDF(source: str, dest: str):
+def convert_GRIB_to_NetCDF(source: Path, dest: Path):
 
     # Load the data from a GRIB file
     grib_data = ekd.from_source("file", source)
@@ -20,6 +22,14 @@ def convert_GRIB_to_NetCDF(source: str, dest: str):
     xarray_data.to_netcdf(dest)
 
 
-if __name__ == "__main__":
-    # Use the command line args to run the conversion from src to dest.
-    convert_GRIB_to_NetCDF(sys.argv[1], sys.argv[1])
+# Get job array index to get a variable for the array job
+job_index = int(os.environ.get("PBS_ARRAY_INDEX"))
+variables = ("mx2t", "mn2t")
+this_var = variables[job_index]
+
+# Setup the source directory
+src_dir = f"/rds/general/project/lemontree/ephemeral/ERA5_CDSAPI/{this_var}"
+
+# Loop over files, writing NetCDF back into the same directory.
+for file in Path(src_dir).glob("*.grib"):
+    convert_GRIB_to_NetCDF(file, file.with_suffix(".nc"))
