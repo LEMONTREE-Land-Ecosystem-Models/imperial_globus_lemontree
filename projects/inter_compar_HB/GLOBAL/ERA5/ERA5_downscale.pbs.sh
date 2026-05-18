@@ -11,7 +11,7 @@
 #PBS -lwalltime=24:00:00
 #PBS -j oe
 #PBS -J 0-9
-#PBS -o /rds/general/project/lemontree/live/projects/inter_compar_HB/GLOBAL/ERA5_downscale_^array_index^.out
+#PBS -o /rds/general/project/lemontree/live/projects/inter_compar_HB/GLOBAL/ERA5/ERA5_downscale_^array_index^.out
 
 module load CDO
 
@@ -41,7 +41,7 @@ mkdir -p $DEST_DIR/$THIS_VAR
 for file in $SRC_DIR/*.nc ; 
     do echo $file; 
     cdo -z zip_6  \
-        remapbil,/rds/general/projects/lemontree/live/projects/inter_compar_HB/GLOBAL/ERA5/ERA5_grid_half_degree.txt \
+        remapbil,/rds/general/project/lemontree/live/projects/inter_compar_HB/GLOBAL/ERA5/half_degree.grd \
         $file \
         $DEST_DIR/$THIS_VAR/$(basename $file) 
 done
