@@ -23,10 +23,9 @@ THIS_VAR=${VARIABLES[$PBS_ARRAY_INDEX]}
 # Switch between the two possible source directories
 if [[ "$THIS_VAR" == "mx2t" || "$THIS_VAR" == "mn2t" ]]; then
     VAR_DIR="ERA5_CDSAPI"
-else:
+else
     VAR_DIR="ERA5_ARCO"
 fi
-
 
 # Setup the source and destination directories
 SRC_DIR="/rds/general/project/lemontree/ephemeral/${VAR_DIR}/${THIS_VAR}"
