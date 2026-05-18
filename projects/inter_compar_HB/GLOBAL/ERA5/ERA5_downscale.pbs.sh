@@ -10,15 +10,12 @@
 #PBS -lselect=1:ncpus=1:mem=96gb
 #PBS -lwalltime=24:00:00
 #PBS -j oe
-#PBS -J 0-5
+#PBS -J 0-9
 #PBS -o /rds/general/project/lemontree/live/projects/inter_compar_HB/GLOBAL/ERA5_downscale_^array_index^.out
 
 module load CDO
 
-# Select a variable to convert based on the array index - the PBS settings above iterate
-# over the first six variables since these were complete when the script was first run.
-# Re-submitting the script with -J 6-9 would then target the remaining variables once
-# complete.
+# Select a variable to convert based on the array index
 
 VARIABLES=("u10" "v10" "d2m" "t2m" "sp" "tp" "ssrd" "strd" "mx2t" "mn2t")
 THIS_VAR=${VARIABLES[$PBS_ARRAY_INDEX]}
