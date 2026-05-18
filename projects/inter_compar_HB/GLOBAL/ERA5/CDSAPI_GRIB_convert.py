@@ -15,11 +15,14 @@ def convert_GRIB_to_NetCDF(source: Path, dest: Path):
     # Convert it using valid_time dimensions and dropping the optional earthkit metadata
     xarray_data = grib_data.to_xarray(time_dims="valid_time", add_earthkit_attrs=False)
 
+    # Rename valid_time to restore CF compliance
+    xarray_data_time = xarray_data.rename({"valid_time": "time"})
+
     # Reduce byte depth to save space
-    xarray_data = xarray_data.astype("float32")
+    xarray_data_time = xarray_data_time.astype("float32")
 
     # Save to file
-    xarray_data.to_netcdf(dest)
+    xarray_data_time.to_netcdf(dest)
 
 
 # Get job array index to get a variable for the array job
