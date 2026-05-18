@@ -43,5 +43,5 @@ for file in $SRC_DIR/*.nc ;
     cdo -z zip_6  \
         remapbil,/rds/general/project/lemontree/live/projects/inter_compar_HB/GLOBAL/ERA5/half_degree.grd \
         $file \
-        $DEST_DIR/$THIS_VAR/$(basename $file) 
+        $DEST_DIR/$THIS_VAR/$(basename $file)
 done

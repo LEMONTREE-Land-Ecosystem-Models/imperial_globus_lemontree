@@ -45,4 +45,40 @@ The downloaded files then need to be converted from GRIB to NetCDF, which uses t
 
 The downloaded NetCDF files are then resampled to 0.5° using bilinear remapping in CDO
 (`cdo remapbil`) and the outputs are written to variable directories in this ERA5
-directory. 
+directory.
+
+## Workflow
+
+This assumes of course that everything goes right. In practice, it turns out that the
+`ephemeral` directory has a 10TB per user quota, so this can't all be done in one pass,
+which means running some of these files with alterations to only fetch some variables or
+run some of the array jobs.
+
+```sh
+cd /rds/general/project/lemontree/live/projects/inter_compar_HB/GLOBAL/ERA5
+
+# Download the ARCO files to ephemeral 
+# - this is not an array job as the API is fast and works well with a single user 
+qsub CDS_ARCO_download.pbs.sh
+
+# Download the CDSAPI files to ephemeral
+# - this does use an array job to share downloading across researchers.
+qsub CDSAPI_download.pbs.sh
+```
+
+Once those downloads have completed, create NetCDF versions of the GRIB downloads, in
+the same directories
+
+```sh
+# Convert the CDSAPI GRIB files to NetCDF, again writing to ephemeral
+# - this uses an array job to parallel conversion across the variables 
+qsub CDSAPI_download.pbs.sh
+```
+
+Lastly, downscale the netCDF to 0.5°
+
+```sh
+# Downscale the NetCDFs
+# - this uses an array job to parallel conversion across the variables 
+qsub ERA5_downscale.pbs.sh
+```
