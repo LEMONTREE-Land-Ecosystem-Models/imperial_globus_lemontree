@@ -49,26 +49,30 @@ os.environ["CDSAPI_KEY"] = cdsapi_info["key"][job_index - 1]
 job_subsets = (
     (
         "minimum_2m_temperature_since_previous_post_processing",
+        "mn2t",
         range(1980, 1981),  # range(1980, 2003),
     ),
     (
         "minimum_2m_temperature_since_previous_post_processing",
+        "mn2t",
         range(2003, 2004),  # range(2003, 2026),
     ),
     (
         "maximum_2m_temperature_since_previous_post_processing",
+        "mx2t",
         range(1980, 2003),
     ),
     (
         "maximum_2m_temperature_since_previous_post_processing",
+        "mx2t",
         range(2003, 2026),
     ),
 )
 
-var, years = job_subsets[job_index - 1]
+var, short_var, years = job_subsets[job_index - 1]
 
 # Check an output directory on the ephemeral directory.
-output_dir = Path("/rds/general/project/lemontree/ephemeral/ERA5_swarm_array")
+output_dir = Path("/rds/general/project/lemontree/ephemeral/ERA5_CDSAPI")
 output_dir.mkdir(exist_ok=True)
 progress_file = open(output_dir / "progress.log", "a")
 
@@ -90,7 +94,7 @@ task_list = [
             "time": time,
             "data_format": "grib",
         },
-        target=output_dir / var / f"{var}_{year}_{month}.grib",
+        target=output_dir / short_var / f"{short_var}_{year}_{month}.grib",
     )
     for year, month in product(years, months)
 ]
